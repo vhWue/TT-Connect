@@ -9,7 +9,7 @@ import { Stack } from "expo-router";
 export default function HomeStack() {
     return <Stack>
         <Stack.Screen name="index" options={{
-            header: () => <CustomHeader title="Home" />,
+            header: () => <CustomHeader width="40" title="TT Connect" />,
             headerShadowVisible: false,
             headerTransparent: true,
         }} />

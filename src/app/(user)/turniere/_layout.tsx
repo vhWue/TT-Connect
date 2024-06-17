@@ -9,7 +9,7 @@ import { Pressable } from 'react-native';
 export default function TurnierStack() {
     return <Stack>
         <Stack.Screen name="index" options={{
-            header: () => <CustomHeader title="Turnier" />,
+            header: () => <CustomHeader width="30" title="Turniere" />,
             headerShadowVisible: false,
             headerTransparent: true,
         }} />

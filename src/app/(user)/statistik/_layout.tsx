@@ -9,7 +9,7 @@ import { Pressable } from 'react-native';
 export default function StatistikStack() {
     return <Stack>
         <Stack.Screen name="index" options={{
-            header: () => <CustomHeader title="Statistik" />,
+            header: () => <CustomHeader width="30" title="Statistik" />,
             headerShadowVisible: false,
             headerTransparent: true,
         }} />

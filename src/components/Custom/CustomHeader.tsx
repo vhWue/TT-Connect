@@ -4,14 +4,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 import SVGBat from '@assets/images/Bat.svg'
 import SVGBat_red from '@assets/images/bat_red.svg'
-const CustomHeader = ({ title }: { title: string }) => {
+const CustomHeader = ({ title, width }: { title: string, width: string }) => {
     return (
         <View style={styles.header}>
 
             <SVGBat style={styles.bat} width={25} height={25} />
 
             <MaskedView
-                style={{ width: '25%' }}
+                style={{ width: width + '%' }}
                 maskElement={
                     <View style={{
                         backgroundColor: 'transparent',
