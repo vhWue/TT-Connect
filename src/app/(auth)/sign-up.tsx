@@ -23,7 +23,7 @@ const SignUpScreen = () => {
     }
     return (
         <View style={styles.container}>
-            <Stack.Screen options={{ title: 'Sign up' }} />
+            <Stack.Screen options={{ title: 'Sign up', headerShown: false }} />
 
             <Text style={styles.label}>Email</Text>
             <TextInput
@@ -55,6 +55,7 @@ const styles = StyleSheet.create({
         padding: 20,
         justifyContent: 'center',
         flex: 1,
+        backgroundColor: Colors.dark.background
     },
     label: {
         color: 'gray',

@@ -5,6 +5,7 @@ import Colors from '@/constants/Colors';
 import { Link, Stack } from 'expo-router';
 import { supabase } from '../lib/supabase';
 
+
 const SignInScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -23,7 +24,7 @@ const SignInScreen = () => {
     }
     return (
         <View style={styles.container}>
-            <Stack.Screen options={{ title: 'Sign in' }} />
+            <Stack.Screen options={{ title: 'Sign in', headerShown: false }} />
 
             <Text style={styles.label}>Email</Text>
             <TextInput
@@ -55,6 +56,7 @@ const styles = StyleSheet.create({
         padding: 20,
         justifyContent: 'center',
         flex: 1,
+        backgroundColor: Colors.dark.background
     },
     label: {
         color: 'gray',

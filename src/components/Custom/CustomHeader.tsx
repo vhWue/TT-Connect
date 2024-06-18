@@ -10,8 +10,6 @@ import Colors from '@/constants/Colors';
 
 const CustomHeader = ({ title, width, router_name }: { title: string, width: string, router_name: string }) => {
 
-    console.log(router_name);
-
 
     const dynamicWith = width + "%"
     return (

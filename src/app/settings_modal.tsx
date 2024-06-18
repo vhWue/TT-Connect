@@ -4,6 +4,8 @@ import { supabase } from '@/app/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
 import { Redirect, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar'
+import Colors from '@/constants/Colors';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 const SettingsScreen = () => {
@@ -14,7 +16,7 @@ const SettingsScreen = () => {
         return <Redirect href={'/sign-in'} />
     }
     return (
-        <View>
+        <SafeAreaView style={styles.container}>
             {/* <Button
                 onPress={async () => {
                     setIsLoading(true)
@@ -34,8 +36,15 @@ const SettingsScreen = () => {
             }} title='Sign Out' />
             {isLoading ? <ActivityIndicator /> : null}
             <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto'} />
-        </View>
+        </SafeAreaView>
     );
 };
+
+const styles = StyleSheet.create({
+    container: {
+        backgroundColor: Colors.dark.background,
+        flex: 1
+    }
+})
 
 export default SettingsScreen;
