@@ -25,12 +25,20 @@ export default function TabLayout() {
                 tabBarStyle: {
                     position: 'absolute',
                     paddingTop: 20,
-                    borderTopWidth: 0
+                    borderTopWidth: 0,
+
                 },
+                tabBarLabelStyle: {
+                    fontFamily: 'Staatliches',
+                    fontSize: 14,
+                    letterSpacing: 1,
+                    paddingTop: 15
+                },
+
 
                 tabBarBackground: () => (
                     <BlurView
-                        intensity={15}
+                        intensity={80}
                         style={{
                             ...StyleSheet.absoluteFillObject,
                             overflow: 'hidden',

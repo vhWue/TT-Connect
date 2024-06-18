@@ -9,7 +9,7 @@ import { Pressable } from 'react-native';
 export default function MapStack() {
     return <Stack>
         <Stack.Screen name="index" options={{
-            header: () => <CustomHeader width="20" title="Map" />,
+            header: () => <CustomHeader width="17" title="Map" />,
             headerShadowVisible: false,
             headerTransparent: true,
         }} />

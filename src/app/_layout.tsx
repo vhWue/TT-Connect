@@ -25,6 +25,7 @@ export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),
     SFProDisplay: require('../../assets/fonts/SF-Pro-Display-Regular.ttf'),
+    Staatliches: require('../../assets/fonts/Staatliches.ttf'),
     ...FontAwesome.font,
   });
 
