@@ -1,10 +1,18 @@
 import React from 'react';
-import { Text, View, StyleSheet, Image } from 'react-native';
+import { Text, View, StyleSheet, Image, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 import SVGBat from '@assets/images/Bat.svg'
 import SVGBat_red from '@assets/images/bat_red.svg'
-const CustomHeader = ({ title, width }: { title: string, width: string }) => {
+import { FontAwesome } from '@expo/vector-icons';
+import { Link } from 'expo-router';
+import Colors from '@/constants/Colors';
+
+const CustomHeader = ({ title, width, router_name }: { title: string, width: string, router_name: string }) => {
+
+    console.log(router_name);
+
+
     const dynamicWith = width + "%"
     return (
         <View style={styles.header}>
@@ -36,6 +44,28 @@ const CustomHeader = ({ title, width }: { title: string, width: string }) => {
 
             </MaskedView>
             <SVGBat_red style={styles.bat_r} width={25} height={25} />
+
+            {router_name === 'home' && (
+                <View style={styles.modal}>
+                    <Link href="/settings_modal" asChild>
+                        <Pressable>
+                            {({ pressed }) => (
+                                <FontAwesome
+                                    name="user"
+                                    size={25}
+                                    color='#E6E6EB'
+                                    style={{ opacity: pressed ? 0.5 : 1 }}
+                                />
+                            )}
+                        </Pressable>
+                    </Link>
+                </View>
+            )
+
+            }
+
+
+
         </View>
     );
 };
@@ -63,6 +93,11 @@ const styles = StyleSheet.create({
     },
     bat_r: {
         top: 30,
+    },
+    modal: {
+        position: 'absolute',
+        right: 30,
+        top: 62
     }
 });
 

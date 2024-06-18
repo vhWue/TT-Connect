@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import AuthProvider from '@/providers/AuthProvider';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -49,10 +50,12 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   return (
-
-    <Stack>
-      <Stack.Screen name="(user)" options={{ headerShown: false }} />
-    </Stack>
-
+    <AuthProvider>
+      <Stack>
+        <Stack.Screen name="(user)" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="settings_modal" options={{ presentation: 'modal' }} />
+      </Stack>
+    </AuthProvider>
   );
 }
