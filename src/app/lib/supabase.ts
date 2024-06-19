@@ -51,8 +51,14 @@ class LargeSecureStore {
     }
 }
 
-const supabaseUrl = "https://mbjvpjgiallnpeqmnctf.supabase.co"
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ianZwamdpYWxsbnBlcW1uY3RmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg2MTM0ODYsImV4cCI6MjAzNDE4OTQ4Nn0.AFnFubrpwg8iY9GBB6Vyz4qA30onRvuMg-tmWq5ojY8"
+let supabaseUrl = process.env.EXPO_PUBLIC_API_URL
+let supabaseAnonKey = process.env.EXPO_PUBLIC_API_KEY
+if (!supabaseUrl) {
+    supabaseUrl = ""
+}
+if (!supabaseAnonKey) {
+    supabaseAnonKey = ""
+}
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     auth: {

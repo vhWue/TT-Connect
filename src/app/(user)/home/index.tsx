@@ -2,9 +2,16 @@ import { View, Text, StyleSheet } from 'react-native'
 import React from 'react'
 
 import BaseScreen from '@/components/BaseScreen';
+import { useTournamentsList } from '@/api/turniere';
 
 
 const HomeScreen = () => {
+
+    const { data: tournaments, error, isLoading } = useTournamentsList({ limit: 1 })
+    console.log("------------------------------------------------");
+
+    console.log("Turnierdaten", tournaments);
+
     return (
         <BaseScreen>
             <View style={styles.container}>
