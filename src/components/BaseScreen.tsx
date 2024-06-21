@@ -1,32 +1,43 @@
 import { View, Text, ImageBackground, SafeAreaView, StyleSheet } from 'react-native'
-import React, { PropsWithChildren } from 'react'
+import React, { PropsWithChildren, ReactElement } from 'react'
 import Colors from '@/constants/Colors'
+import Animated from 'react-native-reanimated'
 
-const BaseScreen = ({ children }: PropsWithChildren) => {
+type BaseScreenProps = {
+    entering?: any,
+    exiting?: any,
+    ellipse?: boolean
+} & PropsWithChildren
+
+const BaseScreen = ({ children, exiting, entering, ellipse = true }: BaseScreenProps) => {
 
     return (
-        <View style={styles.container}>
+        <Animated.View entering={entering} exiting={exiting} style={styles.container}>
             <ImageBackground style={styles.bg_img} source={require('assets/images/Rectangle.png')}>
-                <SafeAreaView>
-                    {children}
-                </SafeAreaView>
             </ImageBackground>
-            <ImageBackground style={styles.ellipse}
-                source={require('assets/images/Ellipse.png')}
-            ></ImageBackground>
+            <View style={{ flex: 1, marginBottom: 75, }} >
+                {children}
+            </View>
+            {ellipse && (
+                <ImageBackground style={styles.ellipse}
+                    source={require('assets/images/Ellipse.png')}
+                ></ImageBackground>
+            )}
 
-        </View>
+        </Animated.View>
     )
 }
 
 const styles = StyleSheet.create({
     container: {
         backgroundColor: Colors.dark.background,
-        flex: 1
+        flex: 1,
     },
     bg_img: {
-        flex: 1,
-        marginBottom: 180,
+        bottom: 40,
+        position: 'absolute',
+        height: '100%',
+        width: '100%'
     },
     ellipse: {
         width: 300,

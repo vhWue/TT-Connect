@@ -19,5 +19,9 @@ export default {
   nav: {
     active: '#FFA857',
     inactive: '#A4A4A4'
+  },
+  text: {
+    base: '#E6E6EB',
+    lightgray: '#A4A4A4'
   }
 };

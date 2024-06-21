@@ -14,6 +14,7 @@ export default function MapStack() {
             header: () => <CustomHeader router_name={router.name} width="17" title="Map" />,
             headerShadowVisible: false,
             headerTransparent: true,
+            headerShown: false
         }} />
     </Stack>;
 }

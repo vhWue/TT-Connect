@@ -16,4 +16,18 @@ export const useTournamentsList = ({ limit = 50 }: { limit: number }) => {
         },
     });
 }
+export const useTournamentDetailsById = (id: number) => {
+    return useQuery({
+        queryKey: ['tournaments', id],
+        queryFn: async () => {
+            const { data, error } = await supabase.from('tournaments').select('*,competitions(*)').eq('id', id).single();
+
+            if (error) {
+                throw new Error(error.message);
+            }
+
+            return data || [];
+        },
+    });
+}
 
