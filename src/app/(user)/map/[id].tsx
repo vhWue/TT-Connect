@@ -1,6 +1,6 @@
 
 
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native'
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native'
 import React, { useState } from 'react'
 import { Stack, useLocalSearchParams } from 'expo-router'
 import Animated, { FadeInLeft } from 'react-native-reanimated';
@@ -10,31 +10,39 @@ import Colors from '@/constants/Colors';
 import SVG_Trennstrich from '@assets/images/Trennstrich.svg'
 import CompetitionAccordion from '@/components/Custom/CompetitionAccordion';
 import CompetitionAccordionList from '@/components/Custom/CompetitionAccordionList';
+import { Alert } from 'react-native';
+
+
 
 const TurnierDetailScreen = () => {
+
     const { id: idString } = useLocalSearchParams();
     const [collapsed, setCollapsed] = useState(true);
     const [isSticky, setIsSticky] = useState(false);  // Zustand für Sticky-Header
     const id = parseFloat(typeof idString === 'string' ? idString : idString[0])
     const { data: turnier, error, isLoading } = useTournamentDetailsById(id)
-    if (!isLoading) {
-        //console.log("Turnierdaten: ", turnier?.competitions);
-    }
-    if (error) {
-        console.log(error.message);
-
-    }
-    const toggleExpanded = () => {
-        console.log("BeforePressed", collapsed);
-
-        setCollapsed(!collapsed);
-        console.log("AfterPressed", collapsed);
-
-    };
-    const handleScroll = (event) => {
+    if (error) { console.log(error.message); }
+    const handleScroll = (event: any) => {
         const y = event.nativeEvent.contentOffset.y;
         setIsSticky(y >= 315); // Angenommener Wert, an dem der Header sticky wird
     };
+
+    const handleTurnierAnmeldung = () => {
+        if (turnier?.registrationEndDatetime) {
+            const registrationEndDate = new Date(turnier.registrationEndDatetime).getTime();
+            const currentDate = Date.now();
+
+            if (registrationEndDate < currentDate) {
+                Alert.alert("Der Anmeldezeitraum ist zu Ende");
+            } else {
+                Alert.alert("Zum Turnier angemeldet");
+            }
+        } else {
+            console.log("Kein Anmeldeschlussdatum verfügbar");
+        }
+    };
+
+
 
     return (
         <BaseScreen ellipse={false} entering={FadeInLeft.duration(500)}>
@@ -43,56 +51,62 @@ const TurnierDetailScreen = () => {
             {isSticky && (
                 <View style={{ width: '100%', height: 100, position: 'absolute', backgroundColor: '#0C0C0C' }}></View>
             )}
-            <SafeAreaView>
-                <ScrollView style={{ marginTop: 15 }}
-                    showsVerticalScrollIndicator={false}
-                    stickyHeaderIndices={[2]}
-                    onScroll={handleScroll}
-                >
-                    <View style={styles.container}>
-                        <Text style={styles.header}>{turnier?.name}</Text>
-                        <View style={styles.subheader}>
-                            <View style={styles.inline}>
-                                <Text style={styles.title}>Turnierart</Text>
-                                <Text style={styles.value}>Qualification</Text>
-                            </View>
-                            <View style={styles.inline}>
-                                <Text style={styles.title}>Saison</Text>
-                                <Text style={styles.value}>2023/24</Text>
-                            </View>
-                            <View style={styles.inline}>
-                                <Text style={styles.title}>Verband</Text>
-                                <Text style={styles.value}>BaTTV</Text>
-                            </View>
-                            <View style={styles.inline}>
-                                <Text style={styles.title}>Veranstalter</Text>
-                                <Text style={styles.value}>BJC Buchen</Text>
-                            </View>
-                            <View style={styles.inline}>
-                                <Text style={styles.title}>Zeitraum</Text>
-                                <Text style={styles.value}>24.01 - 25.01.2024</Text>
-                            </View>
-                            <View style={styles.inline}>
-                                <Text style={styles.title}>Austragungsort</Text>
-                                <Text style={styles.value}>{`97065 Würzburg \nMehrzweckhalle`}</Text>
+            {!isLoading && (
+                <SafeAreaView>
+                    <ScrollView style={{ marginTop: 15 }}
+                        showsVerticalScrollIndicator={false}
+                        stickyHeaderIndices={[2]}
+                        onScroll={handleScroll}
+                    >
+                        <View style={styles.container}>
+                            <Text style={styles.header}>{turnier?.name}</Text>
+                            <View style={styles.subheader}>
+                                <View style={styles.inline}>
+                                    <Text style={styles.title}>Turnierart</Text>
+                                    <Text style={styles.value}>{turnier?.type.toUpperCase()}</Text>
+                                </View>
+                                <View style={styles.inline}>
+                                    <Text style={styles.title}>Anmeldung bis</Text>
+                                    <Text style={styles.value}>
+                                        {turnier?.registrationEndDatetime ? `${new Date(turnier.registrationEndDatetime).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} | ${new Date(turnier.registrationEndDatetime).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr` : 'Datum nicht verfügbar'}
+
+                                    </Text>
+                                </View>
+                                <View style={styles.inline}>
+                                    <Text style={styles.title}>Start</Text>
+                                    <Text style={styles.value}>
+                                        {turnier?.startDate ? `${new Date(turnier?.startDate).toLocaleDateString('de-DE')}` : 'Datum nicht verfügbar'}
+                                    </Text>
+                                </View>
+                                <View style={styles.inline}>
+                                    <Text style={styles.title}>Verband</Text>
+                                    <Text style={styles.value}>{turnier?.federationNickname}</Text>
+                                </View>
+                                <View style={styles.inline}>
+                                    <Text style={styles.title}>Veranstalter</Text>
+                                    <Text style={styles.value}>{`${turnier?.hostName}`}</Text>
+                                </View>
+
+                                <View style={styles.inline}>
+                                    <Text style={styles.title}>Austragungsort</Text>
+                                    <Text style={styles.value}>{`${turnier?.locationZIPCode} ${turnier?.locationCity} \n${turnier?.locationName}`}</Text>
+                                </View>
                             </View>
                         </View>
-                    </View>
-                    <SVG_Trennstrich style={styles.trennstrich} />
+                        <SVG_Trennstrich style={styles.trennstrich} />
 
-                    <TouchableOpacity onPress={toggleExpanded}>
-                        <Text style={isSticky ? styles.stickyHeader : styles.Competitions}>Competitions</Text>
-                    </TouchableOpacity>
-                    {!isLoading && (
-                        //<CompetitionAccordion collapsed={collapsed} sections={turnier?.competitions} />
-                        <CompetitionAccordionList collapsed={collapsed} sections={turnier?.competitions} />
-                    )
+                        <TouchableOpacity onPress={() => setCollapsed(!collapsed)}>
+                            <Text style={isSticky ? styles.stickyHeader : styles.Competitions}>Staffeln</Text>
+                        </TouchableOpacity>
+                        {!isLoading && (<CompetitionAccordionList collapsed={collapsed} sections={turnier?.competitions} />)}
 
-                    }
-
-
-                </ScrollView>
-            </SafeAreaView>
+                        <TouchableOpacity onPress={() => handleTurnierAnmeldung()} style={styles.button}>
+                            <Text style={{ fontFamily: 'Staatliches', color: Colors.text.base, letterSpacing: 1, fontSize: 20, }}>Anmelden</Text>
+                        </TouchableOpacity>
+                        <View style={{ height: 50 }}></View>
+                    </ScrollView>
+                </SafeAreaView>
+            )}
 
         </BaseScreen>
     )
@@ -130,7 +144,7 @@ const styles = StyleSheet.create({
     },
     container: {
         alignItems: 'flex-start',
-        paddingLeft: 32,
+        paddingLeft: 15,
         paddingTop: 20
     },
     trennstrich: {
@@ -142,7 +156,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Staatliches',
         fontSize: 20,
         letterSpacing: 1,
-        paddingLeft: 32,
+        paddingLeft: 15,
         paddingTop: 5,
         paddingBottom: 15,
         backgroundColor: 'transparent',
@@ -153,12 +167,22 @@ const styles = StyleSheet.create({
         fontFamily: 'Staatliches',
         fontSize: 20,
         letterSpacing: 1,
-        paddingLeft: 32,
+        paddingLeft: 15,
         paddingTop: 5,
         paddingBottom: 15,
-
-
     },
+    button: {
+        marginTop: 50,
+        borderRadius: 12,
+        width: 350,
+        height: 60,
+        backgroundColor: '#0C0C0C',
+        alignSelf: 'center',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: Colors.text.base
+    }
 })
 
 export default TurnierDetailScreen

@@ -64,8 +64,6 @@ const MapScreen = () => {
                     tournaments?.filter(tournaments => tournaments.locationLatitude !== null && tournaments.locationLongitude !== null).map((marker, index) => (
                         <Marker
                             key={marker.id}
-                            title={marker.name}
-                            description={`${marker.locationName} | ${marker.hostName}`}
                             coordinate={{ latitude: marker.locationLatitude, longitude: marker.locationLongitude }}
                             onPress={() => onMarkerSelected(marker)}
                         />
