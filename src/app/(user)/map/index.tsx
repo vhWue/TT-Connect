@@ -1,26 +1,39 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Text, ActivityIndicator, Button, Pressable } from 'react-native';
 import { Marker } from 'react-native-maps';
-import { useIsFocused } from '@react-navigation/native';
 import * as Location from 'expo-location';
-import { TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { useTournamentsList } from '@/api/turniere';
+import { useUpcomingTournamentsList } from '@/api/turniere';
 import MapView from 'react-native-map-clustering';
 import { Tables } from '@/types';
-import { router } from 'expo-router';
+import { router, useRouter } from 'expo-router';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import SVG_Settings from '@assets/images/settings.svg'
+import { useFilter } from '@/providers/MapFilterProvider';
 
 const MapScreen = () => {
-    const { data: tournaments, error, isLoading } = useTournamentsList({ limit: 50 })
+    const router = useRouter()
     const mapRef = useRef(null);
     const [errorMsg, setErrorMsg] = useState('');
+    const filter = useFilter()
+    const { data: tournaments, error, isLoading } = useUpcomingTournamentsList(filter)
     const [userRegion, setUserRegion] = useState({
         latitude: 49.7913,
         longitude: 9.9534,
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421,
     });
+    const [activeFilterAmount, setActiveFilterAmount] = useState(0)
+
+    useEffect(() => {
+        let numTypes = filter.filterByTournamentType.length
+        let isFilterByDate = filter.filterByDateUpcoming ? 1 : 0
+        let sum = numTypes + isFilterByDate
+        setActiveFilterAmount(sum)
+
+
+    }, [filter])
+
 
     useEffect(() => {
         (async () => {
@@ -40,7 +53,6 @@ const MapScreen = () => {
 
 
     }, []);
-
 
     const moveToUserRegion = () => {
         mapRef.current.animateToRegion(userRegion, 2000);
@@ -72,8 +84,20 @@ const MapScreen = () => {
                 }
 
             </MapView>
-            <View style={styles.icon}>
-                <Pressable onPress={moveToUserRegion}>
+            <View style={styles.settingsIcon}>
+                <Pressable onPress={() => router.navigate('/(user)/map/filtermodal')}>
+                    {({ pressed }) => (
+                        <View>
+                            <SVG_Settings style={{ opacity: pressed ? 0.5 : 1 }} />
+                            <View style={styles.activeTypesWrapper}>
+                                <Text style={styles.activeTypes}>{activeFilterAmount}</Text>
+                            </View>
+                        </View>
+                    )}
+                </Pressable>
+            </View>
+            <View style={styles.userIcon}>
+                <Pressable onPress={() => moveToUserRegion()}>
                     {({ pressed }) => (
                         <FontAwesome
                             name="user"
@@ -108,10 +132,31 @@ const styles = StyleSheet.create({
         marginTop: -12,
         marginLeft: -12,
     },
-    icon: {
+    activeTypes: {
+        fontSize: 12,
+        fontWeight: 'bold'
+    },
+    activeTypesWrapper: {
+        width: 20,
+        height: 20,
+        backgroundColor: '#6270EA',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'absolute',
+        borderRadius: 50,
+        top: -5,
+        right: 15
+    },
+    userIcon: {
 
         position: 'absolute',
         bottom: 100,
+        right: 20
+    },
+    settingsIcon: {
+
+        position: 'absolute',
+        top: 55,
         right: 20
 
     }

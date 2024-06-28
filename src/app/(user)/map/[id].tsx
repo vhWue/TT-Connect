@@ -8,7 +8,6 @@ import BaseScreen from '@/components/BaseScreen';
 import { useTournamentDetailsById } from '@/api/turniere';
 import Colors from '@/constants/Colors';
 import SVG_Trennstrich from '@assets/images/Trennstrich.svg'
-import CompetitionAccordion from '@/components/Custom/CompetitionAccordion';
 import CompetitionAccordionList from '@/components/Custom/CompetitionAccordionList';
 import { Alert } from 'react-native';
 
@@ -20,7 +19,7 @@ const TurnierDetailScreen = () => {
     const [collapsed, setCollapsed] = useState(true);
     const [isSticky, setIsSticky] = useState(false);  // Zustand für Sticky-Header
     const id = parseFloat(typeof idString === 'string' ? idString : idString[0])
-    const { data: turnier, error, isLoading } = useTournamentDetailsById(id)
+    const { data: turnier, error, isLoading, isPending } = useTournamentDetailsById(id)
     if (error) { console.log(error.message); }
     const handleScroll = (event: any) => {
         const y = event.nativeEvent.contentOffset.y;
@@ -46,6 +45,7 @@ const TurnierDetailScreen = () => {
 
     return (
         <BaseScreen ellipse={false} entering={FadeInLeft.duration(500)}>
+            {isLoading && (<ActivityIndicator size='large' style={{ position: 'absolute', left: '45%', top: '50%' }} />)}
 
             <Stack.Screen options={{ headerTransparent: true, headerBackVisible: false, headerShown: false }} />
             {isSticky && (
@@ -113,9 +113,6 @@ const TurnierDetailScreen = () => {
 }
 
 const styles = StyleSheet.create({
-    text: {
-        color: "white"
-    },
     header: {
         color: Colors.text.base,
         fontFamily: 'sfpro_bold',
