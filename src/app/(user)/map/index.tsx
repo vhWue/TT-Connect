@@ -1,40 +1,62 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, Text, ActivityIndicator, Button, Pressable } from 'react-native';
-import { Marker } from 'react-native-maps';
+import { View, StyleSheet, Text, ActivityIndicator, Button, Pressable, Dimensions } from 'react-native';
+import { Circle, Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { FontAwesome } from '@expo/vector-icons';
 import { useUpcomingTournamentsList } from '@/api/turniere';
 import MapView from 'react-native-map-clustering';
 import { Tables } from '@/types';
-import { router, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
-import SVG_Settings from '@assets/images/settings.svg'
+import SVG_Settings from '@assets/images/settings.svg';
 import { useFilter } from '@/providers/MapFilterProvider';
 
+const { width, height } = Dimensions.get('window');
+const ASPECT_RATIO = width / height;
+
+const calculateDelta = (maxDistance: number, latitude: number) => {
+    const oneDegreeOfLatitudeInMeters = 111.32 * 1000;
+    const latDelta = maxDistance / oneDegreeOfLatitudeInMeters;
+    const lonDelta = maxDistance / (oneDegreeOfLatitudeInMeters * Math.cos(latitude * Math.PI / 180));
+    return { latitudeDelta: latDelta * 2, longitudeDelta: lonDelta * 2 };
+};
+
+
+
+export type UserLocation = {
+    latitude: number;
+    longitude: number;
+    latitudeDelta: number;
+    longitudeDelta: number;
+};
+
 const MapScreen = () => {
-    const router = useRouter()
+    const router = useRouter();
     const mapRef = useRef(null);
     const [errorMsg, setErrorMsg] = useState('');
-    const filter = useFilter()
-    const { data: tournaments, error, isLoading } = useUpcomingTournamentsList(filter)
-    const [userRegion, setUserRegion] = useState({
-        latitude: 49.7913,
-        longitude: 9.9534,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
+    const filter = useFilter();
+    const [activeFilterAmount, setActiveFilterAmount] = useState(0);
+    const [isUserRegionLoaded, setIsUserRegionLoaded] = useState(false);
+    const [userRegion, setUserRegion] = useState<UserLocation>({
+        latitude: 0,
+        longitude: 0,
+        latitudeDelta: 0,
+        longitudeDelta: 0,
     });
-    const [activeFilterAmount, setActiveFilterAmount] = useState(0)
-
-    useEffect(() => {
-        let numTypes = filter.filterByTournamentType.length
-        let isFilterByDate = filter.filterByDateUpcoming ? 1 : 0
-        let sum = numTypes + isFilterByDate
-        setActiveFilterAmount(sum)
-
-
-    }, [filter])
-
-
+    const [currentRegion, setCurrentRegion] = useState<UserLocation>({
+        latitude: 0,
+        longitude: 0,
+        latitudeDelta: 0,
+        longitudeDelta: 0,
+    });
+    const handleRegionChangeComplete = (region: any) => {
+        setCurrentRegion({
+            latitude: region.latitude,
+            longitude: region.longitude,
+            latitudeDelta: region.latitudeDelta,
+            longitudeDelta: region.longitudeDelta
+        })
+    };
     useEffect(() => {
         (async () => {
             let { status } = await Location.requestForegroundPermissionsAsync();
@@ -43,46 +65,94 @@ const MapScreen = () => {
                 return;
             }
             let location = await Location.getCurrentPositionAsync({});
+
             setUserRegion({
                 latitude: location.coords.latitude,
                 longitude: location.coords.longitude,
-                latitudeDelta: 0.0922,
-                longitudeDelta: 0.0421
+                latitudeDelta: 0.3,
+                longitudeDelta: 0.09952762428750894,
             });
+            setIsUserRegionLoaded(true); // Markiere userRegion als geladen
         })();
-
-
     }, []);
+
+    useEffect(() => {
+        let numTypes = filter.filterByTournamentType.length;
+        let isFilterByDate = filter.filterByDateUpcoming ? 1 : 0;
+        let sum = numTypes + isFilterByDate;
+        setActiveFilterAmount(sum);
+
+        //setCurrentRegion(filter.targetLocation)
+    }, [filter]);
+
+    useEffect(() => {
+        mapRef.current.animateToRegion(filter.targetLocation, 2000);
+        setTimeout(() => {
+            setCurrentRegion(filter.targetLocation)
+        }, 2100);
+    }, [filter.targetLocation])
+
+
+    useEffect(() => {
+        if (isUserRegionLoaded) {
+            setCurrentRegion(userRegion);
+            console.log(currentRegion);
+        }
+    }, [isUserRegionLoaded]);
 
     const moveToUserRegion = () => {
         mapRef.current.animateToRegion(userRegion, 2000);
     };
+
     const onMarkerSelected = (marker: Tables<'tournaments'>) => {
         console.log("Marker ID: ", marker.id);
-        router.push(`/(user)/map/${marker.id}`)
+        router.push(`/(user)/map/${marker.id}`);
+    };
+
+    const { data: tournaments, error, isLoading } = useUpcomingTournamentsList(filter, userRegion);
+
+
+
+
+
+    if (!isUserRegionLoaded) {
+        return (
+            <View style={styles.loadingContainer}>
+                <Text>Loading...</Text>
+            </View>
+        );
     }
+
     return (
         <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.container}>
-
             <MapView
-                initialRegion={userRegion}
+                region={currentRegion}
                 style={styles.map}
                 ref={mapRef}
                 showsUserLocation
                 showsPointsOfInterest={true}
                 showsCompass={false}
+                onRegionChangeComplete={handleRegionChangeComplete}
             >
-                {
-                    tournaments?.filter(tournaments => tournaments.locationLatitude !== null && tournaments.locationLongitude !== null).map((marker, index) => (
-                        <Marker
-                            key={marker.id}
-                            coordinate={{ latitude: marker.locationLatitude, longitude: marker.locationLongitude }}
-                            onPress={() => onMarkerSelected(marker)}
-                        />
-
-                    ))
-                }
-
+                {tournaments?.filter(t => t.locationLatitude !== null && t.locationLongitude !== null).map((marker) => (
+                    <Marker
+                        key={marker.id}
+                        coordinate={{ latitude: marker.locationLatitude, longitude: marker.locationLongitude }}
+                        onPress={() => onMarkerSelected(marker)}
+                    />
+                ))}
+                <Circle
+                    center={{ latitude: userRegion.latitude, longitude: userRegion.longitude }}
+                    radius={filter.maxDistance * 1000}
+                    strokeColor='rgba(78, 92, 214, 1.0)'
+                    fillColor='rgba(98, 112, 234, 0.2)'
+                />
+                {/* <Circle
+                    center={{ latitude: currentRegion.latitude, longitude: currentRegion.longitude }}
+                    radius={filter.maxDistance * 1000}
+                    strokeColor='rgba(51, 255, 147, 1)'
+                    fillColor='rgba(51, 255, 147, 0.2)'
+                /> */}
             </MapView>
             <View style={styles.settingsIcon}>
                 <Pressable onPress={() => router.navigate('/(user)/map/filtermodal')}>
@@ -108,8 +178,6 @@ const MapScreen = () => {
                     )}
                 </Pressable>
             </View>
-
-
         </Animated.View>
     );
 };
@@ -118,7 +186,11 @@ const styles = StyleSheet.create({
     map: {
         width: '100%',
         height: '100%',
-
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     container: {
         flex: 1, // Ensure that the parent View fills the screen
@@ -134,7 +206,7 @@ const styles = StyleSheet.create({
     },
     activeTypes: {
         fontSize: 12,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
     },
     activeTypesWrapper: {
         width: 20,
@@ -145,21 +217,18 @@ const styles = StyleSheet.create({
         position: 'absolute',
         borderRadius: 50,
         top: -5,
-        right: 15
+        right: 15,
     },
     userIcon: {
-
         position: 'absolute',
         bottom: 100,
-        right: 20
+        right: 20,
     },
     settingsIcon: {
-
         position: 'absolute',
         top: 55,
-        right: 20
-
-    }
+        right: 20,
+    },
 });
 
 export default MapScreen;
