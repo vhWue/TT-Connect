@@ -1,11 +1,12 @@
-import { View, Text, StyleSheet, Switch, ScrollView, TouchableOpacity, TextInput } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, StyleSheet, Switch, ScrollView, TouchableOpacity, TextInput, TouchableWithoutFeedback, Keyboard } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import { BlurView } from 'expo-blur'
 import Colors from '@/constants/Colors';
 import { useRouter } from 'expo-router';
 import { useFilter } from '@/providers/MapFilterProvider';
 import MultiSelectComponent from '@/components/Custom/MultiSelectComponent';
 import Slider from '@react-native-community/slider';
+import SearchableDropdown from '@/components/Custom/SearchableDropdown';
 
 const TYPES = [
     {
@@ -20,21 +21,26 @@ const TYPES = [
 ]
 
 const FilterModalScreen = () => {
+
+
     const filter = useFilter()
     const [isEnabled, setIsEnabled] = useState(filter.filterByDateUpcoming);
     const [selectedTypes, setselectedTypes] = useState([])
     const [kilometer, setKilometer] = useState(filter.maxDistance);
+    const [currentCity, setCurrentCity] = useState("")
     const toggleSwitch = () => setIsEnabled(previousState => !previousState);
     const router = useRouter()
     const handleConfirm = (isEnabled: boolean) => {
+        const targetCoords = filter.targetCoords
         filter.setFilterByDateUpcoming(isEnabled)
         filter.setFilterByTournamentType(selectedTypes)
         filter.setMaxDistance(kilometer)
+        filter.setTargetLocationName(currentCity)
         filter.setTargetLocation({
-            latitude: 50.1109, // Frankfurt am Main
-            longitude: 8.6821,
-            latitudeDelta: 0.222,
-            longitudeDelta: 0.0421,
+            latitude: targetCoords.latitude,
+            longitude: targetCoords.longitude,
+            latitudeDelta: 2,
+            longitudeDelta: 0.2,
         })
         router.back()
     }
@@ -49,45 +55,53 @@ const FilterModalScreen = () => {
     };
     return (
         <BlurView intensity={70} style={styles.container} tint="dark">
-            <ScrollView style={styles.content_container}>
-                <View style={styles.content_row}>
-                    <Text style={styles.text}>Nur Anstehende Turniere</Text>
-                    <Switch
-                        trackColor={{ false: '#767577', true: '#FF2323' }}
-                        thumbColor={isEnabled ? "#212121" : '#f4f3f4'}
-                        onValueChange={toggleSwitch}
-                        value={isEnabled}
-                    />
-                </View>
-                <View>
+            <View style={styles.content_container}>
+                <ScrollView contentContainerStyle={{ justifyContent: 'space-evenly', flex: 1 }}>
                     <View style={styles.content_row}>
-                        <Text style={styles.text}>Distanz</Text>
-                        <TextInput
-                            style={styles.input}
-                            keyboardType="numeric"
-                            value={String(kilometer)}
-                            onChangeText={handleInputChange}
+                        <Text style={styles.text}>Nur Anstehende Turniere</Text>
+                        <Switch
+                            trackColor={{ false: '#767577', true: '#FF2323' }}
+                            thumbColor={isEnabled ? "#212121" : '#f4f3f4'}
+                            onValueChange={toggleSwitch}
+                            value={isEnabled}
                         />
-                        <Text style={styles.text}>km</Text>
                     </View>
-                    <Slider
-                        style={styles.slider}
-                        minimumValue={0}
-                        maximumValue={500}
-                        step={1}
-                        value={kilometer}
-                        onValueChange={(value) => setKilometer(value)}
-                        minimumTrackTintColor="#1EB1FC"
-                        maximumTrackTintColor="#d3d3d3"
-                        thumbTintColor="#1EB1FC"
-                    />
-                </View>
+                    <View style={[styles.content_row, { zIndex: 5 }]}>
+                        <SearchableDropdown targetLocationName={filter.targetLocationName} setCurrentCity={setCurrentCity} />
+                    </View>
+                    <View>
+                        <View style={styles.content_row}>
+                            <Text style={styles.text}>Distanz</Text>
+                            <TextInput
+                                style={styles.input}
+                                keyboardType="numeric"
+                                value={String(kilometer)}
+                                onChangeText={handleInputChange}
+                            />
+                            <Text style={styles.text}>km</Text>
+                        </View>
 
-                <MultiSelectComponent items={TYPES} setselectedTypes={setselectedTypes} />
-                <TouchableOpacity onPress={() => handleConfirm(isEnabled)} style={styles.button}>
-                    <Text style={{ fontFamily: 'Staatliches', color: Colors.text.base, letterSpacing: 1, fontSize: 20, }}>Filtern</Text>
-                </TouchableOpacity>
-            </ScrollView>
+
+                        <Slider
+                            style={styles.slider}
+                            minimumValue={0}
+                            maximumValue={500}
+                            step={1}
+                            value={kilometer}
+                            onValueChange={(value) => setKilometer(value)}
+                            minimumTrackTintColor="#1EB1FC"
+                            maximumTrackTintColor="#d3d3d3"
+                            thumbTintColor="#1EB1FC"
+                        />
+
+                    </View>
+
+                    <MultiSelectComponent items={TYPES} setselectedTypes={setselectedTypes} />
+                    <TouchableOpacity onPress={() => handleConfirm(isEnabled)} style={styles.button}>
+                        <Text style={{ fontFamily: 'Staatliches', color: Colors.text.base, letterSpacing: 1, fontSize: 20, }}>Filtern</Text>
+                    </TouchableOpacity>
+                </ScrollView>
+            </View>
 
 
         </BlurView>
@@ -102,6 +116,8 @@ const styles = StyleSheet.create({
     },
     content_container: {
         marginHorizontal: 25,
+        justifyContent: 'space-evenly',
+        height: '80%'
     },
     content_row: {
         flexDirection: 'row',

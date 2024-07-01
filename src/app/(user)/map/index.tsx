@@ -86,21 +86,49 @@ const MapScreen = () => {
     }, [filter]);
 
     useEffect(() => {
-        mapRef.current.animateToRegion(filter.targetLocation, 2000);
-        setTimeout(() => {
+
+        if (isUserRegionLoaded) {
+
             setCurrentRegion(filter.targetLocation)
-        }, 2100);
-    }, [filter.targetLocation])
+
+
+
+            console.log("----------------------------");
+            console.log("Current Region", currentRegion);
+            console.log("----------------------------");
+
+            console.log(" Target Location", filter.targetLocation);
+            console.log("----------------------------");
+            console.log(" GeoCoords", filter.targetCoords);
+            console.log("----------------------------");
+
+
+            const newPosition = {
+                latitude: filter.targetCoords.latitude,
+                longitude: filter.targetCoords.longitude,
+                latitudeDelta: filter.targetLocation.latitudeDelta,
+                longitudeDelta: filter.targetLocation.longitudeDelta,
+            }
+            console.log("-------------------------------");
+            console.log("New Position", newPosition);
+
+            mapRef.current.animateToRegion(newPosition, 2000);
+            console.log("Target Location geändert");
+
+        }
+
+
+    }, [filter.targetLocation, filter.targetCoords])
 
 
     useEffect(() => {
         if (isUserRegionLoaded) {
             setCurrentRegion(userRegion);
-            console.log(currentRegion);
         }
     }, [isUserRegionLoaded]);
 
     const moveToUserRegion = () => {
+
         mapRef.current.animateToRegion(userRegion, 2000);
     };
 
@@ -115,7 +143,7 @@ const MapScreen = () => {
 
 
 
-    if (!isUserRegionLoaded) {
+    if (!isUserRegionLoaded && isLoading) {
         return (
             <View style={styles.loadingContainer}>
                 <Text>Loading...</Text>
@@ -126,6 +154,7 @@ const MapScreen = () => {
     return (
         <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.container}>
             <MapView
+                initialRegion={userRegion}
                 region={currentRegion}
                 style={styles.map}
                 ref={mapRef}
@@ -142,7 +171,7 @@ const MapScreen = () => {
                     />
                 ))}
                 <Circle
-                    center={{ latitude: userRegion.latitude, longitude: userRegion.longitude }}
+                    center={{ latitude: filter.targetCoords.latitude, longitude: filter.targetCoords.longitude }}
                     radius={filter.maxDistance * 1000}
                     strokeColor='rgba(78, 92, 214, 1.0)'
                     fillColor='rgba(98, 112, 234, 0.2)'

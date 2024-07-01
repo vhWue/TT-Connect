@@ -1072,6 +1072,19 @@ export type Database = {
         }
         Returns: unknown
       }
+      get_distinct_regions: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          tournamentregion: string
+        }[]
+      }
+      get_distinct_tournament_regions: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          tournamentregion: string
+          locationcity: string
+        }[]
+      }
       get_proj4_from_srid: {
         Args: {
           "": number

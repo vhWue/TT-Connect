@@ -11,12 +11,21 @@ export type FilterData = {
     setMaxDistance: any;
     targetLocation: UserLocation
     setTargetLocation: any
+    targetLocationName: string
+    setTargetLocationName: any
+    targetCoords: targetCoords
+    setTargetCoords: any
 }
 const defaultTarget = {
     latitude: 0,
     longitude: 0,
     latitudeDelta: 0,
     longitudeDelta: 0,
+}
+
+export type targetCoords = {
+    latitude: number,
+    longitude: number,
 }
 
 export const FilterContext = createContext<FilterData>({
@@ -27,7 +36,14 @@ export const FilterContext = createContext<FilterData>({
     maxDistance: 0,
     setMaxDistance: null,
     targetLocation: defaultTarget,
-    setTargetLocation: null
+    setTargetLocation: null,
+    targetLocationName: '',
+    setTargetLocationName: null,
+    targetCoords: {
+        latitude: 0,
+        longitude: 0,
+    },
+    setTargetCoords: null
 });
 
 export default function FilterProvider({ children }: PropsWithChildren) {
@@ -35,14 +51,20 @@ export default function FilterProvider({ children }: PropsWithChildren) {
     const [filterByTournamentType, setFilterByTournamentType] = useState([])
     const [maxDistance, setMaxDistance] = useState(50)
     const [targetLocation, setTargetLocation] = useState(defaultTarget)
-
+    const [targetLocationName, setTargetLocationName] = useState('Würzburg')
+    const [targetCoords, setTargetCoords] = useState({
+        latitude: 0,
+        longitude: 0
+    })
     return (
         <FilterContext.Provider value={
             {
                 filterByDateUpcoming, setFilterByDateUpcoming,
                 filterByTournamentType, setFilterByTournamentType,
                 maxDistance, setMaxDistance,
-                targetLocation, setTargetLocation
+                targetLocation, setTargetLocation,
+                targetLocationName, setTargetLocationName,
+                targetCoords, setTargetCoords
 
             }}>
             {children}
