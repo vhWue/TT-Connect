@@ -2,11 +2,12 @@ import { View, Text, StyleSheet, Switch, ScrollView, TouchableOpacity, TextInput
 import React, { useEffect, useState } from 'react'
 import { BlurView } from 'expo-blur'
 import Colors from '@/constants/Colors';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { useFilter } from '@/providers/MapFilterProvider';
 import MultiSelectComponent from '@/components/Custom/MultiSelectComponent';
 import Slider from '@react-native-community/slider';
 import SearchableDropdown from '@/components/Custom/SearchableDropdown';
+import { AntDesign } from '@expo/vector-icons';
 
 const TYPES = [
     {
@@ -25,9 +26,10 @@ const FilterModalScreen = () => {
 
     const filter = useFilter()
     const [isEnabled, setIsEnabled] = useState(filter.filterByDateUpcoming);
-    const [selectedTypes, setselectedTypes] = useState([])
+    const [selectedTypes, setSelectedTypes] = useState(filter.filterByTournamentType)
     const [kilometer, setKilometer] = useState(filter.maxDistance);
     const [currentCity, setCurrentCity] = useState("")
+    const [resetCurrentCity, setResetCurrentCity] = useState(false)
     const toggleSwitch = () => setIsEnabled(previousState => !previousState);
     const router = useRouter()
     const handleConfirm = (isEnabled: boolean) => {
@@ -45,6 +47,14 @@ const FilterModalScreen = () => {
         router.back()
     }
 
+    const resetFilters = () => {
+        setKilometer(50)
+        setCurrentCity('Würzburg')
+        setResetCurrentCity(!resetCurrentCity)
+        setSelectedTypes([])
+
+    }
+
     const handleInputChange = (input: string) => {
         const value = parseInt(input, 10);
         if (!isNaN(value) && value >= 0 && value <= 500) {
@@ -55,7 +65,16 @@ const FilterModalScreen = () => {
     };
     return (
         <BlurView intensity={70} style={styles.container} tint="dark">
+            <Stack.Screen options={{
+                headerLeft: () => (
+                    <TouchableOpacity
+                        onPress={() => resetFilters()}>
+                        <AntDesign name="reload1" style={{ paddingLeft: 8, paddingTop: 5 }} size={25} color={Colors.text.base} />
+                    </TouchableOpacity>
+                )
+            }} />
             <View style={styles.content_container}>
+
                 <ScrollView contentContainerStyle={{ justifyContent: 'space-evenly', flex: 1 }}>
                     <View style={styles.content_row}>
                         <Text style={styles.text}>Nur Anstehende Turniere</Text>
@@ -67,7 +86,7 @@ const FilterModalScreen = () => {
                         />
                     </View>
                     <View style={[styles.content_row, { zIndex: 5 }]}>
-                        <SearchableDropdown targetLocationName={filter.targetLocationName} setCurrentCity={setCurrentCity} />
+                        <SearchableDropdown targetLocationName={filter.targetLocationName} setResetCurrentCity={setResetCurrentCity} resetCurrentCity={resetCurrentCity} setCurrentCity={setCurrentCity} />
                     </View>
                     <View>
                         <View style={styles.content_row}>
@@ -96,14 +115,12 @@ const FilterModalScreen = () => {
 
                     </View>
 
-                    <MultiSelectComponent items={TYPES} setselectedTypes={setselectedTypes} />
+                    <MultiSelectComponent items={TYPES} selectedTypes={selectedTypes} setSelectedTypes={setSelectedTypes} />
                     <TouchableOpacity onPress={() => handleConfirm(isEnabled)} style={styles.button}>
                         <Text style={{ fontFamily: 'Staatliches', color: Colors.text.base, letterSpacing: 1, fontSize: 20, }}>Filtern</Text>
                     </TouchableOpacity>
                 </ScrollView>
             </View>
-
-
         </BlurView>
     )
 }

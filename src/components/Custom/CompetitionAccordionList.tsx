@@ -48,7 +48,10 @@ const iconSelector = (ageGroup: string | null) => {
 
 
 
-const CompetitionAccordionList = ({ sections, multipleSelectEnabled = false, collapsed = true }: { sections: Tables<'competitions'>[], multipleSelectEnabled: boolean, collapsed: boolean }) => {
+const CompetitionAccordionList = ({ sections, multipleSelectEnabled = false, collapsed = true, registeredTournaments }: {
+    sections: Tables<'competitions'>[],
+    multipleSelectEnabled: boolean, collapsed: boolean, registeredTournaments: Tables<'tournament_registration'>[] | undefined
+}) => {
 
 
     const [activeSections, setActiveSections] = useState([]);
@@ -94,7 +97,7 @@ const CompetitionAccordionList = ({ sections, multipleSelectEnabled = false, col
 
     const renderContent = (filteredCompetitions: CompetitionObjectArray, _, isActive: boolean) => {
         return (
-            <CompetitionAccordion multipleSelectEnabled={false} collapsed={collapsed} sections={filteredCompetitions.competition} />
+            <CompetitionAccordion multipleSelectEnabled={false} collapsed={collapsed} registeredTournaments={registeredTournaments} sections={filteredCompetitions.competition} />
         );
     };
 

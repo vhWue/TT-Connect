@@ -6,11 +6,14 @@ import { Link, Stack, useRouter } from "expo-router";
 import { Pressable, TouchableOpacity } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import FilterModalHeader from "@/components/Custom/FilterModalHeader";
-import FilterProvider from "@/providers/MapFilterProvider";
+import FilterProvider, { useFilter } from "@/providers/MapFilterProvider";
 
 export default function MapStack() {
     const route = useRoute()
     const router = useRouter()
+
+
+
     return <FilterProvider>
         <Stack>
             <Stack.Screen name="index" options={{

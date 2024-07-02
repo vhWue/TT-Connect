@@ -5,9 +5,6 @@ import BaseScreen from '@/components/BaseScreen';
 
 
 const HomeScreen = () => {
-
-
-
     return (
         <BaseScreen>
             <View style={styles.container}>

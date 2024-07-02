@@ -93,14 +93,14 @@ const MapScreen = () => {
 
 
 
-            console.log("----------------------------");
+            /* console.log("----------------------------");
             console.log("Current Region", currentRegion);
             console.log("----------------------------");
 
             console.log(" Target Location", filter.targetLocation);
             console.log("----------------------------");
             console.log(" GeoCoords", filter.targetCoords);
-            console.log("----------------------------");
+            console.log("----------------------------"); */
 
 
             const newPosition = {
@@ -109,11 +109,11 @@ const MapScreen = () => {
                 latitudeDelta: filter.targetLocation.latitudeDelta,
                 longitudeDelta: filter.targetLocation.longitudeDelta,
             }
-            console.log("-------------------------------");
-            console.log("New Position", newPosition);
+            /* console.log("-------------------------------");
+            console.log("New Position", newPosition); */
 
             mapRef.current.animateToRegion(newPosition, 2000);
-            console.log("Target Location geändert");
+            /*  console.log("Target Location geändert"); */
 
         }
 

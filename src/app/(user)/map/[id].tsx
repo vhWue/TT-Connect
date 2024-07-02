@@ -5,17 +5,21 @@ import React, { useState } from 'react'
 import { Stack, useLocalSearchParams } from 'expo-router'
 import Animated, { FadeInLeft } from 'react-native-reanimated';
 import BaseScreen from '@/components/BaseScreen';
-import { useTournamentDetailsById } from '@/api/turniere';
+import { useInsertTournamentRegistration, useRegisteredTournamentCompetitionsByPlayerId, useTournamentDetailsById } from '@/api/turniere';
 import Colors from '@/constants/Colors';
 import SVG_Trennstrich from '@assets/images/Trennstrich.svg'
 import CompetitionAccordionList from '@/components/Custom/CompetitionAccordionList';
 import { Alert } from 'react-native';
-
-
+import { Tables } from '@/types';
+import { useAuth } from '@/providers/AuthProvider';
 
 const TurnierDetailScreen = () => {
+    const { playerProfile } = useAuth()
+    const playerID = playerProfile === null ? 0 : playerProfile.id
+    const { data: registeredTournaments, error: registeredTournaments_error } = useRegisteredTournamentCompetitionsByPlayerId(playerID)
 
     const { id: idString } = useLocalSearchParams();
+    const { mutate: insertRegistration } = useInsertTournamentRegistration()
     const [collapsed, setCollapsed] = useState(true);
     const [isSticky, setIsSticky] = useState(false);  // Zustand für Sticky-Header
     const id = parseFloat(typeof idString === 'string' ? idString : idString[0])
@@ -25,23 +29,6 @@ const TurnierDetailScreen = () => {
         const y = event.nativeEvent.contentOffset.y;
         setIsSticky(y >= 315); // Angenommener Wert, an dem der Header sticky wird
     };
-
-    const handleTurnierAnmeldung = () => {
-        if (turnier?.registrationEndDatetime) {
-            const registrationEndDate = new Date(turnier.registrationEndDatetime).getTime();
-            const currentDate = Date.now();
-
-            if (registrationEndDate < currentDate) {
-                Alert.alert("Der Anmeldezeitraum ist zu Ende");
-            } else {
-                Alert.alert("Zum Turnier angemeldet");
-            }
-        } else {
-            console.log("Kein Anmeldeschlussdatum verfügbar");
-        }
-    };
-
-
 
     return (
         <BaseScreen ellipse={false} entering={FadeInLeft.duration(500)}>
@@ -98,11 +85,7 @@ const TurnierDetailScreen = () => {
                         <TouchableOpacity onPress={() => setCollapsed(!collapsed)}>
                             <Text style={isSticky ? styles.stickyHeader : styles.Competitions}>Staffeln</Text>
                         </TouchableOpacity>
-                        {!isLoading && (<CompetitionAccordionList collapsed={collapsed} sections={turnier?.competitions} />)}
-
-                        <TouchableOpacity onPress={() => handleTurnierAnmeldung()} style={styles.button}>
-                            <Text style={{ fontFamily: 'Staatliches', color: Colors.text.base, letterSpacing: 1, fontSize: 20, }}>Anmelden</Text>
-                        </TouchableOpacity>
+                        {!isLoading && (<CompetitionAccordionList registeredTournaments={registeredTournaments} collapsed={collapsed} sections={turnier?.competitions} />)}
                         <View style={{ height: 50 }}></View>
                     </ScrollView>
                 </SafeAreaView>
@@ -167,18 +150,6 @@ const styles = StyleSheet.create({
         paddingLeft: 15,
         paddingTop: 5,
         paddingBottom: 15,
-    },
-    button: {
-        marginTop: 50,
-        borderRadius: 12,
-        width: 350,
-        height: 60,
-        backgroundColor: '#0C0C0C',
-        alignSelf: 'center',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: Colors.text.base
     }
 })
 

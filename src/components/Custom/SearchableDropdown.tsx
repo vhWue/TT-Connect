@@ -5,10 +5,10 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 
-const SearchableDropdown = ({ setCurrentCity, targetLocationName }) => {
+const SearchableDropdown = ({ resetCurrentCity, setResetCurrentCity, setCurrentCity, targetLocationName }) => {
     const { data: regions, error, isLoading } = useDistinctRegions()
     const [open, setOpen] = useState(false);
-    const [value, setValue] = useState(null);
+    const [value, setValue] = useState('');
     useEffect(() => {
         if (typeof value === 'string') {
             setCurrentCity(value);
@@ -16,10 +16,19 @@ const SearchableDropdown = ({ setCurrentCity, targetLocationName }) => {
     }, [value])
 
     useEffect(() => {
+
+
         setValue(targetLocationName)
 
-
     }, [targetLocationName])
+
+    useEffect(() => {
+        if (resetCurrentCity) {
+            setValue('Würzburg')
+            setResetCurrentCity(false)
+        }
+    }, [resetCurrentCity])
+
 
 
     return (

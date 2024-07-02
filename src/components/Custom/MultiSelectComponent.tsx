@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import SectionedMultiSelect from 'react-native-sectioned-multi-select';
@@ -6,15 +6,17 @@ import { BlurView } from 'expo-blur';
 import Colors from '@/constants/Colors';
 import { useFilter } from '@/providers/MapFilterProvider';
 
-const MultiSelectComponent = ({ items, setselectedTypes }: { items: {}[], setselectedTypes: any }) => {
-    const filter = useFilter()
-
-    const [selectedItems, setSelectedItems] = useState(filter.filterByTournamentType);
+const MultiSelectComponent = ({ items, selectedTypes, setSelectedTypes }: { items: {}[], selectedTypes: string[], setSelectedTypes: any }) => {
 
     const onSelectedItemsChange = (selectedItems) => {
-        setSelectedItems(selectedItems);
-        setselectedTypes(selectedItems)
+        setSelectedTypes(selectedItems)
     };
+
+
+    useEffect(() => {
+        setSelectedTypes(selectedTypes)
+    }, [selectedTypes])
+
 
 
 
@@ -28,7 +30,7 @@ const MultiSelectComponent = ({ items, setselectedTypes }: { items: {}[], setsel
                 selectText="Turnierarten"
                 showDropDowns={true}
                 onSelectedItemsChange={onSelectedItemsChange}
-                selectedItems={selectedItems}
+                selectedItems={selectedTypes}
                 selectedText=""
                 hideSearch={true}
                 modalWithSafeAreaView={true}
