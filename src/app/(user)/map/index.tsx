@@ -79,7 +79,8 @@ const MapScreen = () => {
     useEffect(() => {
         let numTypes = filter.filterByTournamentType.length;
         let isFilterByDate = filter.filterByDateUpcoming ? 1 : 0;
-        let sum = numTypes + isFilterByDate;
+        let filterByAgeGroup = filter.filterByAgeGroup ? 1 : 0;
+        let sum = numTypes + isFilterByDate + filterByAgeGroup;
         setActiveFilterAmount(sum);
 
         //setCurrentRegion(filter.targetLocation)
@@ -137,7 +138,7 @@ const MapScreen = () => {
         router.push(`/(user)/map/${marker.id}`);
     };
 
-    const { data: tournaments, error, isLoading } = useUpcomingTournamentsList(filter, userRegion);
+    const { data: tournaments, error, isLoading } = useUpcomingTournamentsList(filter);
 
 
 

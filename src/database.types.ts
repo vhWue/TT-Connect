@@ -334,6 +334,36 @@ export type Database = {
           locationcity: string
         }[]
       }
+      get_filtered_tournaments_with_distance_agegroup: {
+        Args: {
+          in_latitude: number
+          in_longitude: number
+          in_max_distance: number
+          in_age_group: string
+        }
+        Returns: {
+          id: number
+          tournamentId: string
+          name: string
+          startDate: string
+          endDate: string
+          registrationEndDatetime: string
+          fedRankValuation: boolean
+          type: string
+          federationNickname: string
+          hostName: string
+          tournamentRegion: string
+          locationZIPCode: string
+          locationName: string
+          locationCity: string
+          locationLatitude: number
+          locationLongitude: number
+          state: string
+          playerCapacityTotal: number
+          playerCapacityRemaining: number
+          geo_point: unknown
+        }[]
+      }
       gettournamentswithindistance: {
         Args: {
           in_latitude: number

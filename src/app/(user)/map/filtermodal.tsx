@@ -26,15 +26,18 @@ const FilterModalScreen = () => {
 
     const filter = useFilter()
     const [isEnabled, setIsEnabled] = useState(filter.filterByDateUpcoming);
+    const [filterByAgeGroupIsEnabled, SetfilterByAgeGroupIsEnabled] = useState(filter.filterByAgeGroup)
     const [selectedTypes, setSelectedTypes] = useState(filter.filterByTournamentType)
     const [kilometer, setKilometer] = useState(filter.maxDistance);
     const [currentCity, setCurrentCity] = useState("")
     const [resetCurrentCity, setResetCurrentCity] = useState(false)
-    const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+    const toggleFilterByDateUpcomingSwitch = () => setIsEnabled(previousState => !previousState);
+    const toggleFilterByAgeGroupIsEnabledSwitch = () => SetfilterByAgeGroupIsEnabled(previousState => !previousState);
     const router = useRouter()
     const handleConfirm = (isEnabled: boolean) => {
         const targetCoords = filter.targetCoords
         filter.setFilterByDateUpcoming(isEnabled)
+        filter.setFilterByAgeGroup(filterByAgeGroupIsEnabled)
         filter.setFilterByTournamentType(selectedTypes)
         filter.setMaxDistance(kilometer)
         filter.setTargetLocationName(currentCity)
@@ -52,6 +55,7 @@ const FilterModalScreen = () => {
         setCurrentCity('Würzburg')
         setResetCurrentCity(!resetCurrentCity)
         setSelectedTypes([])
+        SetfilterByAgeGroupIsEnabled(false)
 
     }
 
@@ -81,8 +85,17 @@ const FilterModalScreen = () => {
                         <Switch
                             trackColor={{ false: '#767577', true: '#FF2323' }}
                             thumbColor={isEnabled ? "#212121" : '#f4f3f4'}
-                            onValueChange={toggleSwitch}
+                            onValueChange={toggleFilterByDateUpcomingSwitch}
                             value={isEnabled}
+                        />
+                    </View>
+                    <View style={styles.content_row}>
+                        <Text style={styles.text}>Anmeldung möglich</Text>
+                        <Switch
+                            trackColor={{ false: '#767577', true: '#FF2323' }}
+                            thumbColor={filterByAgeGroupIsEnabled ? "#212121" : '#f4f3f4'}
+                            onValueChange={toggleFilterByAgeGroupIsEnabledSwitch}
+                            value={filterByAgeGroupIsEnabled}
                         />
                     </View>
                     <View style={[styles.content_row, { zIndex: 5 }]}>

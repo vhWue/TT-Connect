@@ -5,6 +5,8 @@ import React, { PropsWithChildren, createContext, useContext, useState } from 'r
 export type FilterData = {
     filterByDateUpcoming: boolean,
     setFilterByDateUpcoming: any,
+    filterByAgeGroup: boolean
+    setFilterByAgeGroup: any
     filterByTournamentType: string[]
     setFilterByTournamentType: any
     maxDistance: number;
@@ -31,6 +33,8 @@ export type targetCoords = {
 export const FilterContext = createContext<FilterData>({
     filterByDateUpcoming: true,
     setFilterByDateUpcoming: null,
+    filterByAgeGroup: false,
+    setFilterByAgeGroup: null,
     filterByTournamentType: [],
     setFilterByTournamentType: null,
     maxDistance: 0,
@@ -48,6 +52,7 @@ export const FilterContext = createContext<FilterData>({
 
 export default function FilterProvider({ children }: PropsWithChildren) {
     const [filterByDateUpcoming, setFilterByDateUpcoming] = useState(true);
+    const [filterByAgeGroup, setFilterByAgeGroup] = useState(false)
     const [filterByTournamentType, setFilterByTournamentType] = useState([])
     const [maxDistance, setMaxDistance] = useState(50)
     const [targetLocation, setTargetLocation] = useState(defaultTarget)
@@ -60,6 +65,7 @@ export default function FilterProvider({ children }: PropsWithChildren) {
         <FilterContext.Provider value={
             {
                 filterByDateUpcoming, setFilterByDateUpcoming,
+                filterByAgeGroup, setFilterByAgeGroup,
                 filterByTournamentType, setFilterByTournamentType,
                 maxDistance, setMaxDistance,
                 targetLocation, setTargetLocation,

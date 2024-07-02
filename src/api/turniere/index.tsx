@@ -1,24 +1,26 @@
 import { supabase } from "@/app/lib/supabase";
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { FilterData, useFilter } from "@/providers/MapFilterProvider";
-import { UserLocation } from "@/app/(user)/map";
+import { FilterData } from "@/providers/MapFilterProvider";
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from "@/providers/AuthProvider";
 import { InsertTables } from '../../types';
-import { Alert } from "react-native";
-import { Tables } from '../../database.types';
 
 
-export const useUpcomingTournamentsList = (filter: FilterData, userLocation: UserLocation) => {
+
+export const useUpcomingTournamentsList = (filter: FilterData) => {
+    const { playerProfile } = useAuth()
     const date = new Date().toDateString();
-    const { latitude, longitude } = userLocation;
-    const fetchOnlyUpcoming = filter.filterByDateUpcoming;
-    const turnierTypes = filter.filterByTournamentType;
-    const { maxDistance, targetLocationName } = filter;
-    const { setTargetCoords } = useFilter()
+    const {
+        maxDistance,
+        targetLocationName,
+        setTargetCoords,
+        filterByDateUpcoming: fetchOnlyUpcoming,
+        filterByTournamentType: turnierTypes,
+        filterByAgeGroup
+    } = filter;
 
     return useQuery({
-        queryKey: ['tournaments', { date, filter, userLocation }],
+        queryKey: ['tournaments', { date, fetchOnlyUpcoming, filterByAgeGroup, targetLocationName, maxDistance }],
         queryFn: async () => {
 
             const { data: targetTournaments, error: targetTournaments_Error } = await supabase.from('tournaments')
@@ -47,6 +49,16 @@ export const useUpcomingTournamentsList = (filter: FilterData, userLocation: Use
 
             let query = supabase.rpc('gettournamentswithindistance', rpcParams);
 
+            if (filterByAgeGroup && playerProfile) {
+                const rpcAGroupParams = {
+                    in_latitude: averageLat,
+                    in_longitude: averageLong,
+                    in_max_distance: maxDistance,
+                    in_age_group: playerProfile.ageGroup
+                };
+                query = supabase.rpc('get_filtered_tournaments_with_distance_agegroup', rpcAGroupParams);
+            }
+
             if (fetchOnlyUpcoming) {
                 query = query.gt('registrationEndDatetime', new Date().toISOString());
             }
@@ -59,6 +71,7 @@ export const useUpcomingTournamentsList = (filter: FilterData, userLocation: Use
             if (error) {
                 throw new Error(error.message);
             }
+
 
 
 
@@ -159,6 +172,7 @@ export const useInsertTournamentRegistration = () => {
 
                 throw new Error(existingError.message);
             }
+
 
             if (!existingRegistration) {
                 const { error, data: newRegistration } = await supabase.from('tournament_registration')
