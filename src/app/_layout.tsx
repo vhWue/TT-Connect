@@ -60,7 +60,7 @@ function RootLayoutNav() {
             <Stack.Screen name="(user)" options={{ headerShown: false, }} />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="settings_modal" options={{ presentation: 'modal', title: 'Settings', headerTransparent: true, headerTintColor: '#E6E6EB' }} />
-            <Stack.Screen name="turnier_modal" options={{ presentation: 'modal', title: 'Turnier', headerTransparent: true, headerTintColor: '#E6E6EB' }} />
+            <Stack.Screen name="turnier_modal/[id]" options={{ presentation: 'modal', title: 'Staffeln', headerTransparent: true, headerTintColor: '#E6E6EB' }} />
           </Stack>
         </GestureHandlerRootView>
       </QueryProvider>

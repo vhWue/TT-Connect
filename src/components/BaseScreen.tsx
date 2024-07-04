@@ -6,16 +6,17 @@ import Animated from 'react-native-reanimated'
 type BaseScreenProps = {
     entering?: any,
     exiting?: any,
-    ellipse?: boolean
+    ellipse?: boolean,
+    marginBottom?: number
 } & PropsWithChildren
 
-const BaseScreen = ({ children, exiting, entering, ellipse = true }: BaseScreenProps) => {
+const BaseScreen = ({ children, exiting, entering, ellipse = true, marginBottom = 75 }: BaseScreenProps) => {
 
     return (
         <Animated.View entering={entering} exiting={exiting} style={styles.container}>
             <ImageBackground style={styles.bg_img} source={require('assets/images/Rectangle.png')}>
             </ImageBackground>
-            <View style={{ flex: 1, marginBottom: 75, }} >
+            <View style={{ flex: 1, marginBottom: marginBottom, }} >
                 {children}
             </View>
             {ellipse && (

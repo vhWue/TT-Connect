@@ -16,3 +16,20 @@ export type CompetitionObjectArray = {
     title: string | null;
     competition: Tables<'competitions'>[]
 }
+
+export type PlayerTournaments = {
+    competition_id: number;
+    id: number;
+    player_profile_id: number;
+    registration_time: string;
+    tournament_id: number;
+    tournaments: Tables<'tournaments'>;
+    competitions: Tables<'competitions'>;
+}
+
+export type DistinctPlayerTournaments = {
+
+    tournament_id: number;
+    tournament_data: Tables<'tournaments'>;
+
+}

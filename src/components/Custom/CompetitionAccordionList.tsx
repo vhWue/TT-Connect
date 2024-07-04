@@ -39,6 +39,8 @@ const iconSelector = (ageGroup: string | null) => {
             return <SVG_men />;
         case 'Mixed':
             return <SVG_mixed />;
+        case 'Damen/Herren':
+            return <SVG_mixed />;
         case 'Junioren':
             return <SVG_mixed />;
         default:

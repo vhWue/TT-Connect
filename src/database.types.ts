@@ -334,6 +334,15 @@ export type Database = {
           locationcity: string
         }[]
       }
+      get_distinct_tournaments_by_player: {
+        Args: {
+          player_id_param: number
+        }
+        Returns: {
+          tournament_id: number
+          tournament_data: Json
+        }[]
+      }
       get_filtered_tournaments_with_distance_agegroup: {
         Args: {
           in_latitude: number

@@ -12,6 +12,7 @@ import CompetitionAccordionList from '@/components/Custom/CompetitionAccordionLi
 import { Alert } from 'react-native';
 import { Tables } from '@/types';
 import { useAuth } from '@/providers/AuthProvider';
+import { useInsertCompetitionRegistrationSubscription } from '@/api/turniere/subscriptions';
 
 const TurnierDetailScreen = () => {
     const { playerProfile } = useAuth()
@@ -29,6 +30,7 @@ const TurnierDetailScreen = () => {
         const y = event.nativeEvent.contentOffset.y;
         setIsSticky(y >= 315); // Angenommener Wert, an dem der Header sticky wird
     };
+    useInsertCompetitionRegistrationSubscription()
 
     return (
         <BaseScreen ellipse={false} entering={FadeInLeft.duration(500)}>

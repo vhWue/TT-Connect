@@ -20,7 +20,7 @@ export const useUpcomingTournamentsList = (filter: FilterData) => {
     } = filter;
 
     return useQuery({
-        queryKey: ['tournaments', { date, fetchOnlyUpcoming, filterByAgeGroup, targetLocationName, maxDistance }],
+        queryKey: ['tournaments', { fetchOnlyUpcoming, filterByAgeGroup, turnierTypes, targetLocationName, maxDistance }],
         queryFn: async () => {
 
             const { data: targetTournaments, error: targetTournaments_Error } = await supabase.from('tournaments')
@@ -220,5 +220,50 @@ export const useDeleteTournamentRegistration = () => {
         }
     });
 };
+
+
+export const useRegisteredCompetitionsByPlayer = (player_id: number, tournament_id: number) => {
+    return useQuery({
+        queryKey: ['player_competitions', player_id, tournament_id],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('tournament_registration')
+                .select(`
+                    *,
+                    tournaments: tournament_id (*),
+                    competitions: competition_id (*)
+                `)
+                .eq('player_profile_id', player_id);
+
+            if (error) {
+                throw new Error(error.message);
+            }
+            if (data === null) {
+                return []
+            }
+            const filtered = data.filter((comp) => comp.tournament_id === tournament_id);
+            return filtered || [];
+        },
+    });
+}
+
+export const useRegisteredTournamentsByPlayer = (player_id: number) => {
+    return useQuery({
+        queryKey: ['player_tournaments', player_id],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .rpc('get_distinct_tournaments_by_player', { player_id_param: player_id });
+
+            if (error) {
+                throw new Error(error.message);
+            }
+            if (!data) {
+                return [];
+            }
+
+            return data;
+        },
+    });
+}
 
 
