@@ -30,7 +30,6 @@ const TurnierDetailScreen = () => {
         const y = event.nativeEvent.contentOffset.y;
         setIsSticky(y >= 315); // Angenommener Wert, an dem der Header sticky wird
     };
-    useInsertCompetitionRegistrationSubscription()
 
     return (
         <BaseScreen ellipse={false} entering={FadeInLeft.duration(500)}>

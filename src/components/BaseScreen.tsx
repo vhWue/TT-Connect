@@ -1,5 +1,5 @@
 import { View, Text, ImageBackground, SafeAreaView, StyleSheet } from 'react-native'
-import React, { PropsWithChildren, ReactElement } from 'react'
+import React, { forwardRef, PropsWithChildren, ReactElement } from 'react'
 import Colors from '@/constants/Colors'
 import Animated from 'react-native-reanimated'
 
@@ -7,27 +7,25 @@ type BaseScreenProps = {
     entering?: any,
     exiting?: any,
     ellipse?: boolean,
-    marginBottom?: number
+    marginBottom?: number,
+    animatedStyle?: any
 } & PropsWithChildren
 
-const BaseScreen = ({ children, exiting, entering, ellipse = true, marginBottom = 75 }: BaseScreenProps) => {
-
+const BaseScreen = forwardRef(({ children, exiting, entering, ellipse = true, marginBottom = 75, animatedStyle }: BaseScreenProps, ref) => {
     return (
-        <Animated.View entering={entering} exiting={exiting} style={styles.container}>
+        <Animated.View ref={ref} animatedStyle={animatedStyle} entering={entering} exiting={exiting} style={styles.container}>
             <ImageBackground style={styles.bg_img} source={require('assets/images/Rectangle.png')}>
             </ImageBackground>
-            <View style={{ flex: 1, marginBottom: marginBottom, }} >
+            <View style={{ flex: 1, marginBottom: marginBottom }} >
                 {children}
             </View>
             {ellipse && (
-                <ImageBackground style={styles.ellipse}
-                    source={require('assets/images/Ellipse.png')}
-                ></ImageBackground>
+                <ImageBackground style={styles.ellipse} source={require('assets/images/Ellipse.png')}>
+                </ImageBackground>
             )}
-
         </Animated.View>
-    )
-}
+    );
+});
 
 const styles = StyleSheet.create({
     container: {

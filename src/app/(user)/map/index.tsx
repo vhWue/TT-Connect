@@ -10,7 +10,6 @@ import { useRouter } from 'expo-router';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import SVG_Settings from '@assets/images/settings.svg';
 import { useFilter } from '@/providers/MapFilterProvider';
-
 const { width, height } = Dimensions.get('window');
 const ASPECT_RATIO = width / height;
 
@@ -37,6 +36,7 @@ const MapScreen = () => {
     const filter = useFilter();
     const [activeFilterAmount, setActiveFilterAmount] = useState(0);
     const [isUserRegionLoaded, setIsUserRegionLoaded] = useState(false);
+    const [isCurrentRegionInitiallyLoaded, setisCurrentRegionInitiallyLoaded] = useState(false)
     const [userRegion, setUserRegion] = useState<UserLocation>({
         latitude: 0,
         longitude: 0,
@@ -125,6 +125,7 @@ const MapScreen = () => {
     useEffect(() => {
         if (isUserRegionLoaded) {
             setCurrentRegion(userRegion);
+            setisCurrentRegionInitiallyLoaded(true)
         }
     }, [isUserRegionLoaded]);
 
@@ -152,38 +153,43 @@ const MapScreen = () => {
         );
     }
 
+
     return (
+
         <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.container}>
-            <MapView
-                initialRegion={userRegion}
-                region={currentRegion}
-                style={styles.map}
-                ref={mapRef}
-                showsUserLocation
-                showsPointsOfInterest={true}
-                showsCompass={false}
-                onRegionChangeComplete={handleRegionChangeComplete}
-            >
-                {tournaments?.filter(t => t.locationLatitude !== null && t.locationLongitude !== null).map((marker) => (
-                    <Marker
-                        key={marker.id}
-                        coordinate={{ latitude: marker.locationLatitude, longitude: marker.locationLongitude }}
-                        onPress={() => onMarkerSelected(marker)}
+
+            {isUserRegionLoaded && isCurrentRegionInitiallyLoaded && (
+                <MapView
+                    initialRegion={userRegion}
+                    region={currentRegion}
+                    style={styles.map}
+                    ref={mapRef}
+                    showsUserLocation
+                    showsPointsOfInterest={true}
+                    showsCompass={false}
+                    onRegionChangeComplete={handleRegionChangeComplete}
+                >
+                    {tournaments?.filter(t => t.locationLatitude !== null && t.locationLongitude !== null).map((marker) => (
+                        <Marker
+                            key={marker.id}
+                            coordinate={{ latitude: marker.locationLatitude, longitude: marker.locationLongitude }}
+                            onPress={() => onMarkerSelected(marker)}
+                        />
+                    ))}
+                    <Circle
+                        center={{ latitude: filter.targetCoords.latitude, longitude: filter.targetCoords.longitude }}
+                        radius={filter.maxDistance * 1000}
+                        strokeColor='rgba(78, 92, 214, 1.0)'
+                        fillColor='rgba(98, 112, 234, 0.2)'
                     />
-                ))}
-                <Circle
-                    center={{ latitude: filter.targetCoords.latitude, longitude: filter.targetCoords.longitude }}
-                    radius={filter.maxDistance * 1000}
-                    strokeColor='rgba(78, 92, 214, 1.0)'
-                    fillColor='rgba(98, 112, 234, 0.2)'
-                />
-                {/* <Circle
+                    {/* <Circle
                     center={{ latitude: currentRegion.latitude, longitude: currentRegion.longitude }}
                     radius={filter.maxDistance * 1000}
                     strokeColor='rgba(51, 255, 147, 1)'
                     fillColor='rgba(51, 255, 147, 0.2)'
                 /> */}
-            </MapView>
+                </MapView>
+            )}
             <View style={styles.settingsIcon}>
                 <Pressable onPress={() => router.navigate('/(user)/map/filtermodal')}>
                     {({ pressed }) => (
@@ -209,6 +215,7 @@ const MapScreen = () => {
                 </Pressable>
             </View>
         </Animated.View>
+
     );
 };
 

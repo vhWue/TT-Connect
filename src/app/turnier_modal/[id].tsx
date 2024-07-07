@@ -9,6 +9,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { PlayerTournaments } from '@/types';
 import CompetitionCard from '@/components/Custom/TurnierCard/CompetitionCard';
 import { useDeleteCompetitionRegistrationSubscription } from '@/api/turniere/subscriptions';
+import Animated, { FadeIn, FadeInDown, FadeInRight, FadeInUp } from 'react-native-reanimated';
 
 const TurnierDetailModalScreen = () => {
     const { id: idString } = useLocalSearchParams();
@@ -21,11 +22,7 @@ const TurnierDetailModalScreen = () => {
     }
     const { data, error, isLoading } = useRegisteredCompetitionsByPlayer(playerProfile?.id, id)
 
-
     { isLoading && (<ActivityIndicator size='large' style={{ position: 'absolute', left: '45%', top: '50%' }} />) }
-    if (!data) {
-        return <Text>Du hast dich bisher für keine Turniere angemeldet</Text>
-    }
     let tournaments = data as unknown as PlayerTournaments[]
     return (
         <BaseScreen ellipse={false} marginBottom={0}>
@@ -36,15 +33,17 @@ const TurnierDetailModalScreen = () => {
                         data={tournaments}
                         keyExtractor={(item) => item.competition_id.toString()}
                         renderItem={({ item }) => (
-                            <TouchableOpacity style={styles.itemContainer}>
-                                <CompetitionCard data={item} /></TouchableOpacity>
+                            <Animated.View entering={FadeInUp.duration(750)}>
+                                <TouchableOpacity style={styles.itemContainer}>
+                                    <CompetitionCard data={item} /></TouchableOpacity>
+                            </Animated.View>
                         )}
                         showsVerticalScrollIndicator={false}
                         ListFooterComponent={<View style={styles.footer} />}
-
                     />
+                </SafeAreaView>
+            )}
 
-                </SafeAreaView>)}
         </BaseScreen>
     )
 }
