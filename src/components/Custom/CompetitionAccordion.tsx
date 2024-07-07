@@ -1,7 +1,6 @@
 import Colors from '@/constants/Colors';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
-    ScrollView,
     StyleSheet,
     Text,
     View,
@@ -15,17 +14,25 @@ import { Tables } from '@/types';
 import SVG_arrow_sideways from '@assets/images/arrow_sideways.svg';
 import SVG_arrow_down from '@assets/images/arrow_down.svg';
 import { useAuth } from '@/providers/AuthProvider';
-import { useDeleteTournamentRegistration, useInsertTournamentRegistration } from '@/api/turniere';
-import { AntDesign, FontAwesome } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
+import { PlayerProfile } from '@/core/PlayerProfile';
+import { Competition } from '@/core/Competition';
+import { RegistrationService } from '@/core/Services/RegistrationService';
 
 const CompetitionAccordion = (
     { sections, multipleSelectEnabled = false, collapsed = true, registeredTournaments }:
         { sections: Tables<'competitions'>[], multipleSelectEnabled: boolean, collapsed: boolean, registeredTournaments: Tables<'tournament_registration'>[] | undefined }) => {
+
+
+    const { playerProfile } = useAuth()
+    if (!playerProfile || !registeredTournaments) {
+        return <Text>Kein Spielerprofil oder registrierte Turniere gefunden</Text>
+    }
+    new PlayerProfile(playerProfile)
     const [activeSections, setActiveSections] = useState([]);
     const [multipleSelect, setMultipleSelect] = useState(multipleSelectEnabled);
-    const { mutate: insertRegistration } = useInsertTournamentRegistration()
-    const { mutate: deleteRegistration } = useDeleteTournamentRegistration()
-    const { playerProfile } = useAuth()
+    const registrationService = new RegistrationService(playerProfile, registeredTournaments)
+
 
     const animatedHeaderStyle = useAnimatedStyle(() => {
         return {
@@ -35,132 +42,22 @@ const CompetitionAccordion = (
         };
     });
 
-    const handleTurnierAnmeldung = (competition: Tables<'competitions'>) => {
 
-        if (competition.registrationEndDatetime) {
-            const registrationEndDate = new Date(competition.registrationEndDatetime).getTime();
-            const currentDate = Date.now();
-
-            if (registrationEndDate < currentDate) {
-                Alert.alert("Der Anmeldezeitraum ist zu Ende");
-            } else {
-                if (playerProfile && competition.tournament_id && registeredTournaments) {
-                    const { isRegistered, registrationId } = checkIsRegistered(competition, playerProfile, registeredTournaments)
-                    console.log("registrationId", registrationId);
-
-                    if (!isRegistered) {
-                        const newRegistration = {
-                            competition_id: competition.id,
-                            tournament_id: competition.tournament_id,
-                            player_profile_id: playerProfile?.id
-                        };
-
-                        Alert.alert(
-                            "Bestätigung",
-                            "Möchten Sie sich wirklich für dieses Turnier anmelden?",
-                            [
-                                {
-                                    text: "Abbrechen",
-                                    style: "cancel"
-                                },
-                                {
-                                    text: "Ja",
-                                    onPress: () => {
-                                        insertRegistration(newRegistration);
-                                        Alert.alert("Registrierung erfolgreich");
-                                    }
-                                }
-                            ],
-                            { cancelable: false }
-                        );
-                    }
-                    else {
-                        if (registrationId) {
-                            Alert.alert(
-                                "Bestätigung",
-                                "Möchten Sie Ihre Registrierung wirklich löschen?",
-                                [
-                                    {
-                                        text: "Abbrechen",
-                                        style: "cancel"
-                                    },
-                                    {
-                                        text: "Ja",
-                                        onPress: () => {
-                                            deleteRegistration(registrationId);
-                                            Alert.alert("Registrierung erfolgreich gelöscht");
-                                        }
-                                    }
-                                ],
-                                { cancelable: false }
-                            );
-                        } else {
-                            Alert.alert('Hinweis', 'Sie sind bereits für diesen Wettbewerb im Turnier registriert.');
-                        }
-                    }
-
-                }
-
-
-            }
-        } else {
-            console.log("Kein Anmeldeschlussdatum verfügbar");
-        }
-    };
-
-    const checkEligibility = (competition: Tables<'competitions'>, playerProfile: Tables<'player_profiles'>): boolean => {
-        const isAgeGroupValid = competition.ageGroup ? competition.ageGroup.includes(playerProfile.ageGroup) : false;
-        const isFedRankValid = (
-            competition.fedRankFrom === null || competition.fedRankTo === null || (
-                playerProfile.fedRank !== null &&
-                playerProfile.fedRank >= competition.fedRankFrom &&
-                playerProfile.fedRank <= competition.fedRankTo
-            )
-        );
-        return isAgeGroupValid && isFedRankValid;
-    };
-
-
-
-    const checkPlayerProfile = (competition: Tables<'competitions'>, playerProfile: Tables<'player_profiles'>) => {
-        const eligible = checkEligibility(competition, playerProfile)
-        const { isRegistered } = checkIsRegistered(competition, playerProfile, registeredTournaments ?? [])
+    const checkPlayerProfile = (competition: Tables<'competitions'>) => {
+        const comp = new Competition(competition);
+        const eligible = registrationService.checkEligibility(comp)
+        const { isRegistered } = registrationService.checkIsRegistered(comp)
         if (eligible) {
             return (
-                <TouchableOpacity onPress={() => handleTurnierAnmeldung(competition)} style={styles.button}>
+                <TouchableOpacity onPress={() => registrationService.handleRegistration(comp)} style={styles.button}>
                     <Text style={{ fontFamily: 'Staatliches', color: Colors.text.base, letterSpacing: 1, fontSize: 20 }}>
                         {isRegistered ? 'Abmelden' : 'Anmelden'}
                     </Text>
                 </TouchableOpacity>
             );
         }
-
-
-
         return null;
     };
-
-    const checkIsRegistered = (
-        competition: Tables<'competitions'>,
-        playerProfile: Tables<'player_profiles'>,
-        registeredTournaments: Tables<'tournament_registration'>[]
-    ): { isRegistered: boolean, registrationId: number | null } => {
-        // Finde die Registrierung, falls vorhanden
-        const registration = registeredTournaments.find(
-            (reg) =>
-                reg.competition_id === competition.id &&
-                reg.player_profile_id === playerProfile.id
-        );
-
-        // Prüfen, ob eine Registrierung gefunden wurde
-        const isRegistered = registration !== undefined;
-        const registrationId = registration ? registration.id : null;
-
-        return { isRegistered, registrationId };
-    };
-
-
-
 
 
     const setSections = (sections) => {
@@ -168,20 +65,17 @@ const CompetitionAccordion = (
     };
 
     const renderHeader = (competition: Tables<'competitions'>, _, isActive: boolean) => {
-        let registered = false
-        if (playerProfile && registeredTournaments) {
-            const { isRegistered } = checkIsRegistered(competition, playerProfile, registeredTournaments)
-            registered = isRegistered
-        }
+        const comp = new Competition(competition);
+        const { isRegistered } = registrationService.checkIsRegistered(comp)
 
         return (
             <Animated.View style={[styles.header, animatedHeaderStyle]}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Text style={styles.headerText}>{competition.name}</Text>
-                    {playerProfile && checkEligibility(competition, playerProfile) && (
+                    {registrationService.checkEligibility(comp) && (
                         <AntDesign style={{ position: 'absolute', right: 60 }} name="infocirlceo" size={24} color="#6270EA" />
                     )}
-                    {playerProfile && registeredTournaments && registered && checkEligibility(competition, playerProfile) && (
+                    {isRegistered && registrationService.checkEligibility(comp) && (
                         <AntDesign style={{ position: 'absolute', right: 100 }} name="check" size={24} color="green" />
                     )}
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -250,7 +144,7 @@ const CompetitionAccordion = (
                             : 'keine Angabe'}
                     </Text>
                 </View>
-                {playerProfile && checkPlayerProfile(competition, playerProfile)}
+                {checkPlayerProfile(competition)}
             </View>
         );
     };
