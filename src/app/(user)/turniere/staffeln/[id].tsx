@@ -3,46 +3,35 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native'
 import React, { useState } from 'react'
 import { Stack, useLocalSearchParams } from 'expo-router'
-import { FadeInLeft } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeInLeft } from 'react-native-reanimated';
 import BaseScreen from '@/components/BaseScreen';
-import { useRegisteredTournamentCompetitionsByPlayerId, useTournamentDetailsById } from '@/api/turniere';
+import { useInsertTournamentRegistration, useRegisteredTournamentCompetitionsByPlayerId, useTournamentDetailsById } from '@/api/turniere';
 import Colors from '@/constants/Colors';
 import SVG_Trennstrich from '@assets/images/Trennstrich.svg'
 import CompetitionAccordionList from '@/components/Custom/CompetitionAccordionList';
-
+import { Alert } from 'react-native';
+import { Tables } from '@/types';
 import { useAuth } from '@/providers/AuthProvider';
+import { useInsertCompetitionRegistrationSubscription } from '@/api/turniere/subscriptions';
 
-
-const TurnierDetailScreen = () => {
+const TurnierStaffelnModalScreen = () => {
+    const { id: idString } = useLocalSearchParams();
     const { playerProfile } = useAuth()
     const playerID = playerProfile === null ? 0 : playerProfile.id
-    const { data: registeredTournaments, error: registeredTournaments_error } = useRegisteredTournamentCompetitionsByPlayerId(playerID)
-    const { id: idString } = useLocalSearchParams();
-    const [collapsed, setCollapsed] = useState(true);
-    const [isSticky, setIsSticky] = useState(false);  // Zustand für Sticky-Header
     const id = parseFloat(typeof idString === 'string' ? idString : idString[0])
+    const { data: registeredTournaments, error: registeredTournaments_error } = useRegisteredTournamentCompetitionsByPlayerId(playerID)
+    const [collapsed, setCollapsed] = useState(true);
     const { data: turnier, error, isLoading, isPending } = useTournamentDetailsById(id)
     if (error) { console.log(error.message); }
-    const handleScroll = (event: any) => {
-        const y = event.nativeEvent.contentOffset.y;
-        setIsSticky(y >= 315); // Angenommener Wert, an dem der Header sticky wird
-    };
 
     return (
-        <BaseScreen ellipse={false} entering={FadeInLeft.duration(500)}>
+        <BaseScreen ellipse={false} >
             {isLoading && (<ActivityIndicator size='large' style={{ position: 'absolute', left: '45%', top: '50%' }} />)}
 
-            <Stack.Screen options={{ headerTransparent: true, headerBackVisible: false, headerShown: false }} />
-            {isSticky && (
-                <View style={{ width: '100%', height: 100, position: 'absolute', backgroundColor: '#0C0C0C' }}></View>
-            )}
+
             {!isLoading && (
                 <SafeAreaView>
-                    <ScrollView style={{ marginTop: 15 }}
-                        showsVerticalScrollIndicator={false}
-                        stickyHeaderIndices={[2]}
-                        onScroll={handleScroll}
-                    >
+                    <ScrollView style={{ marginTop: 15 }} showsVerticalScrollIndicator={false}>
                         <View style={styles.container}>
                             <Text style={styles.header}>{turnier?.name}</Text>
                             <View style={styles.subheader}>
@@ -74,14 +63,14 @@ const TurnierDetailScreen = () => {
 
                                 <View style={styles.inline}>
                                     <Text style={styles.title}>Austragungsort</Text>
-                                    <Text style={styles.value}>{`${turnier?.locationZIPCode} ${turnier?.locationCity} \n${turnier?.locationName}`}</Text>
+                                    <Text style={styles.value}>{`${turnier?.locationZIPCode} | ${turnier?.locationCity} \n${turnier?.locationName}`}</Text>
                                 </View>
                             </View>
                         </View>
                         <SVG_Trennstrich style={styles.trennstrich} />
 
                         <TouchableOpacity onPress={() => setCollapsed(!collapsed)}>
-                            <Text style={isSticky ? styles.stickyHeader : styles.Competitions}>Staffeln</Text>
+                            <Text style={styles.Competitions}>Staffeln</Text>
                         </TouchableOpacity>
                         {!isLoading && (<CompetitionAccordionList registeredTournaments={registeredTournaments} collapsed={collapsed} sections={turnier?.competitions} />)}
                         <View style={{ height: 50 }}></View>
@@ -101,28 +90,33 @@ const styles = StyleSheet.create({
 
     },
     subheader: {
-        paddingTop: 30
+        paddingTop: 30,
+        flexWrap: 'wrap',
+        width: '100%'
     },
     inline: {
         flexDirection: 'row',
-        paddingBottom: 5
+        paddingBottom: 15
     },
     title: {
         color: Colors.text.base,
         fontFamily: 'Staatliches',
         fontSize: 20,
         letterSpacing: 1,
-        paddingRight: 5
+        paddingRight: 5,
+        flexShrink: 1,
     },
     value: {
         color: Colors.text.lightgray,
         fontFamily: 'sfpro_medium',
         fontSize: 18,
-        lineHeight: 24
+        lineHeight: 24,
+        flexShrink: 1,
+        flex: 1,
     },
     container: {
         alignItems: 'flex-start',
-        paddingLeft: 15,
+        paddingHorizontal: 15,
         paddingTop: 20
     },
     trennstrich: {
@@ -139,16 +133,6 @@ const styles = StyleSheet.create({
         paddingBottom: 15,
         backgroundColor: 'transparent',
     },
-    stickyHeader: {
-        backgroundColor: '#0C0C0C',  // Hintergrundfarbe, wenn sticky
-        color: Colors.text.base,
-        fontFamily: 'Staatliches',
-        fontSize: 20,
-        letterSpacing: 1,
-        paddingLeft: 15,
-        paddingTop: 5,
-        paddingBottom: 15,
-    }
 })
 
-export default TurnierDetailScreen
+export default TurnierStaffelnModalScreen

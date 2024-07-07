@@ -60,11 +60,11 @@ const CompetitionAccordion = (
     };
 
 
-    const setSections = (sections) => {
+    const setSections = (sections: any) => {
         setActiveSections(sections.includes(undefined) ? [] : sections);
     };
 
-    const renderHeader = (competition: Tables<'competitions'>, _, isActive: boolean) => {
+    const renderHeader = (competition: Tables<'competitions'>, _: any, isActive: boolean) => {
         const comp = new Competition(competition);
         const { isRegistered } = registrationService.checkIsRegistered(comp)
 
@@ -87,7 +87,7 @@ const CompetitionAccordion = (
         );
     };
 
-    const renderContent = (competition: Tables<'competitions'>, _, isActive: boolean) => {
+    const renderContent = (competition: Tables<'competitions'>, _: any, isActive: boolean) => {
         return (
             <View style={[styles.content, isActive ? styles.active : styles.inactive]}>
                 <View style={styles.column}>

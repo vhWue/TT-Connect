@@ -71,7 +71,7 @@ const CompetitionAccordionList = ({ sections, multipleSelectEnabled = false, col
 
 
 
-    const setSections = (sections) => {
+    const setSections = (sections: any) => {
         setActiveSections(sections.includes(undefined) ? [] : sections);
     };
 

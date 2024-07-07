@@ -33,9 +33,9 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     bg_img: {
-        bottom: 40,
+        bottom: 80,
         position: 'absolute',
-        height: '100%',
+        height: 800,
         width: '100%'
     },
     ellipse: {

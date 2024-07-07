@@ -31,6 +31,8 @@ export const useInsertCompetitionRegistrationSubscription = () => {
                 'postgres_changes',
                 { event: 'INSERT', schema: 'public', table: 'tournament_registration' },
                 (payload) => {
+                    console.log("zu Turnier angemeldet");
+
                     queryClient.invalidateQueries({ queryKey: ['tournament_registration'] });
                     queryClient.invalidateQueries({ queryKey: ['player_competitions'] });
                     queryClient.invalidateQueries({ queryKey: ['player_tournaments'] });

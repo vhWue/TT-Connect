@@ -13,12 +13,11 @@ import Animated, { FadeIn, FadeInDown, FadeInRight, FadeInUp } from 'react-nativ
 
 const TurnierDetailModalScreen = () => {
     const { id: idString } = useLocalSearchParams();
-    const id = parseFloat(typeof idString === 'string' ? idString : idString[0])
     useDeleteCompetitionRegistrationSubscription()
+    const id = parseFloat(typeof idString === 'string' ? idString : idString[0])
     const { playerProfile } = useAuth()
-    const router = useRouter()
     if (!playerProfile) {
-        return <Text>Please log in to see your registered tournaments.;</Text>
+        return <Text>Please log in to see your registered tournaments</Text>
     }
     const { data, error, isLoading } = useRegisteredCompetitionsByPlayer(playerProfile?.id, id)
 

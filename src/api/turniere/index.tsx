@@ -1,5 +1,5 @@
 import { supabase } from "@/app/lib/supabase";
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FilterData } from "@/providers/MapFilterProvider";
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from "@/providers/AuthProvider";
@@ -265,5 +265,39 @@ export const useRegisteredTournamentsByPlayer = (player_id: number) => {
         },
     });
 }
+const LIMIT = 5;
 
+const fetchTournaments = async ({ pageParam = null }) => {
+    let query = supabase
+        .from('tournaments')
+        .select('*')
+        .gt('startDate', new Date().toISOString())
+        .order('startDate', { ascending: true })
+        .limit(LIMIT);
 
+    if (pageParam) {
+        query = query.gt('startDate', pageParam);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    const nextPage = data.length === LIMIT ? data[data.length - 1].startDate : null;
+
+    return {
+        data,
+        nextPage,
+    };
+};
+
+export const useTournamentsWithInfiniteScroll = () => {
+    return useInfiniteQuery({
+        queryKey: ['tournament_infiniteScroll'],
+        queryFn: fetchTournaments,
+        initialPageParam: 0,
+        getNextPageParam: (lastPage) => lastPage.nextPage
+    });
+};

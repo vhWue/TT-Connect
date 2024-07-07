@@ -4,13 +4,11 @@ import Colors from '@/constants/Colors'
 import SVG_Bookmark from '@assets/images/material-symbols_bookmark-outline.svg'
 import SVG_Clock from '@assets/images/clock.svg'
 import TurnierStateBadge from './TurnierStateBadge'
-import FedRankBadge from './FedRankBadge'
-
-import { DistinctPlayerTournaments } from '@/types'
+import { Tables } from '@/types'
 import { FontAwesome } from '@expo/vector-icons'
 import TurnierTypeBadge from './TurnierTypeBadge'
 
-const TurnierCard = ({ data }: { data: DistinctPlayerTournaments | undefined }) => {
+const KalenderCard = ({ data }: { data: Tables<'tournaments'> | undefined }) => {
 
     if (!data) {
 
@@ -39,6 +37,7 @@ const TurnierCard = ({ data }: { data: DistinctPlayerTournaments | undefined }) 
 
         return inputString.slice(0, spaceIndex) + '\n' + inputString.slice(spaceIndex + 1);
     }
+
     return (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
@@ -47,12 +46,13 @@ const TurnierCard = ({ data }: { data: DistinctPlayerTournaments | undefined }) 
                         source={require('@assets/images/cardImages/malong.jpg')}
                         resizeMode='cover'
                         style={styles.imagePreviewCircle} />
+
                     <View >
                         <View style={styles.headerWrapper}>
-                            <Text style={styles.headerText}>{insertLineBreakAtNearestWord(data?.tournament_data.name, 30)}</Text>
+                            <Text style={styles.headerText}>{insertLineBreakAtNearestWord(data?.name, 30)}</Text>
                         </View>
                         <View style={styles.subHeaderWrapper}>
-                            <Text style={styles.subheaderText}>{`${insertLineBreakAtNearestWord(data?.tournament_data.locationName, 42)}`}</Text>
+                            <Text style={styles.subheaderText}>{`${insertLineBreakAtNearestWord(data.locationName, 40)}`}</Text>
                         </View>
 
                     </View>
@@ -60,8 +60,8 @@ const TurnierCard = ({ data }: { data: DistinctPlayerTournaments | undefined }) 
                 <SVG_Bookmark style={styles.bookmark} />
                 <View style={styles.badges}>
 
-                    <TurnierStateBadge state={data?.tournament_data.state ?? ''} />
-                    <TurnierTypeBadge state={data?.tournament_data.type ?? ''} />
+                    <TurnierStateBadge state={data?.state ?? ''} />
+                    <TurnierTypeBadge state={data?.type ?? ''} />
                 </View>
             </View>
             <View style={styles.separator}></View>
@@ -71,21 +71,21 @@ const TurnierCard = ({ data }: { data: DistinctPlayerTournaments | undefined }) 
                         <SVG_Clock width={18} height={18} />
                     </View>
                     <Text style={styles.SubInformationBadgeText}>
-                        {data?.tournament_data.startDate ? `${new Date(data?.tournament_data.startDate).toLocaleDateString('de-DE')}` : 'Datum nicht verfügbar'}
+                        {data?.startDate ? `${new Date(data?.startDate).toLocaleDateString('de-DE')}` : 'Datum nicht verfügbar'}
                     </Text>
                 </View>
                 <View style={[styles.SubInformationBadge, styles.badgeMarginLeft]}>
                     <View style={styles.ellipse}>
                         <SVG_Clock width={18} height={18} />
                     </View>
-                    <Text style={styles.SubInformationBadgeText}>{`${data?.tournament_data.locationZIPCode} | ${data?.tournament_data.locationCity}`}</Text>
+                    <Text style={styles.SubInformationBadgeText}>{`${data?.locationZIPCode} | ${data?.locationCity}`}</Text>
                 </View>
                 <View style={[styles.SubInformationBadge, styles.badgeMarginTop]}>
                     <View style={styles.ellipse}>
                         <FontAwesome name="map-marker" size={20} color={Colors.text.base} />
                     </View>
 
-                    <Text style={styles.SubInformationBadgeText}>{data?.tournament_data.hostName}</Text>
+                    <Text style={styles.SubInformationBadgeText}>{data?.hostName}</Text>
                 </View>
             </View>
         </View>
@@ -191,4 +191,4 @@ const styles = StyleSheet.create({
 })
 
 
-export default TurnierCard
+export default KalenderCard

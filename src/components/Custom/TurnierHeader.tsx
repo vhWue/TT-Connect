@@ -4,32 +4,27 @@ import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 import SVGBat from '@assets/images/Bat.svg'
 import SVGBat_red from '@assets/images/bat_red.svg'
-import { FontAwesome } from '@expo/vector-icons';
-import { Link } from 'expo-router';
 import Colors from '@/constants/Colors';
 
-const CustomHeader = ({ title, width, router_name }: { title: string, width: string, router_name: string }) => {
+const TurnierHeader = ({ title, titleWidth }: { title: string, titleWidth: number }) => {
 
 
-    const dynamicWith = width + "%"
+
     return (
         <View style={styles.header}>
 
             <SVGBat style={styles.bat} width={25} height={25} />
 
             <MaskedView
-                style={{ width: dynamicWith }}
+                style={{ width: titleWidth + '%' }}
                 maskElement={
                     <View style={{
                         backgroundColor: 'transparent',
                         justifyContent: 'center',
                         alignItems: 'center',
-
                     }}>
 
-                        <Text style={[styles.title, { backgroundColor: 'transparent' }]}>
-                            {title}
-                        </Text>
+                        <Text style={[styles.title, { backgroundColor: 'transparent' }]}>{title}</Text>
                     </View>
                 }
             >
@@ -43,26 +38,6 @@ const CustomHeader = ({ title, width, router_name }: { title: string, width: str
             </MaskedView>
             <SVGBat_red style={styles.bat_r} width={25} height={25} />
 
-            {router_name === 'home' && (
-                <View style={styles.modal}>
-                    <Link href="/settings_modal" asChild>
-                        <Pressable>
-                            {({ pressed }) => (
-                                <FontAwesome
-                                    name="user"
-                                    size={25}
-                                    color='#E6E6EB'
-                                    style={{ opacity: pressed ? 0.5 : 1 }}
-                                />
-                            )}
-                        </Pressable>
-                    </Link>
-                </View>
-            )
-
-            }
-
-
 
         </View>
     );
@@ -70,7 +45,7 @@ const CustomHeader = ({ title, width, router_name }: { title: string, width: str
 
 const styles = StyleSheet.create({
     header: {
-        height: 90,
+        height: 110,
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'row',
@@ -84,17 +59,12 @@ const styles = StyleSheet.create({
         letterSpacing: 2
     },
     bat: {
-        top: 30,
+        top: 20,
 
     },
     bat_r: {
-        top: 30,
+        top: 20,
     },
-    modal: {
-        position: 'absolute',
-        right: 30,
-        top: 62
-    }
 });
 
-export default CustomHeader;
+export default TurnierHeader;

@@ -83,7 +83,29 @@ const CompetitionCard = ({ data }: { data: PlayerTournaments | undefined }) => {
     };
 
 
+    function insertLineBreakAtNearestWord(inputString: string | null, breakPosition: number): string {
+        if (inputString == null) {
+            return ''
+        }
+        if (breakPosition < 0 || breakPosition >= inputString.length) {
+            return inputString;
+        }
 
+        // Finde den nächsten Leerzeichen nach der Break-Position
+        let spaceIndex = inputString.lastIndexOf(' ', breakPosition);
+
+        // Wenn kein Leerzeichen vor der Break-Position gefunden wurde, suche das nächste Leerzeichen danach
+        if (spaceIndex === -1) {
+            spaceIndex = inputString.indexOf(' ', breakPosition);
+        }
+
+        // Wenn kein Leerzeichen gefunden wurde, gebe den ursprünglichen String zurück
+        if (spaceIndex === -1) {
+            return inputString;
+        }
+
+        return inputString.slice(0, spaceIndex) + '\n' + inputString.slice(spaceIndex + 1);
+    }
 
     return (
         <View>
@@ -96,15 +118,17 @@ const CompetitionCard = ({ data }: { data: PlayerTournaments | undefined }) => {
                                     source={require('@assets/images/cardImages/malong.jpg')}
                                     resizeMode='cover'
                                     style={styles.imagePreviewCircle} />
-
-                                <View style={{ flex: 1 }}>
-                                    <View style={{ flexDirection: 'row', flex: 1, flexWrap: 'wrap', flexShrink: 1 }}>
-                                        <Text style={styles.headerText}>{data?.competitions.name}</Text>
+                                <View >
+                                    <View style={styles.headerWrapper}>
+                                        <Text style={styles.headerText}>{insertLineBreakAtNearestWord(data?.competitions.name, 30)}</Text>
                                     </View>
-                                    <Text style={styles.subheaderText}>{`${data?.competitions.playmode}`}</Text>
+                                    <View style={styles.subHeaderWrapper}>
+                                        <Text style={styles.subheaderText}>{`${insertLineBreakAtNearestWord(data?.competitions.playmode, 40)}`}</Text>
+                                    </View>
+
                                 </View>
                             </View>
-                            <SVG_Bookmark style={styles.bookmark} />
+
                             <View style={styles.badges}>
                                 {FedValidator(data.competitions.fedRankFrom, data.competitions.fedRankTo)}
                                 <TurnierStateBadge state={data?.tournaments.state ?? ''} />
@@ -162,26 +186,35 @@ const styles = StyleSheet.create({
         paddingLeft: 15,
         paddingTop: 15,
     },
+    headerWrapper: {
+        flex: 1
+    },
+    subHeaderWrapper: {
+        flexDirection: 'row',
+        flex: 1,
+        flexWrap: 'wrap',
+        flexShrink: 1,
+        width: '100%'
+    },
     headerText: {
         color: Colors.text.base,
         fontFamily: 'sfpro_bold',
         fontSize: 16,
+        flexShrink: 1,
+        flex: 1,
     },
     subheaderText: {
         color: Colors.text.lightgray,
         fontFamily: 'sfpro_bold',
         fontSize: 14,
-        paddingTop: 5
+        paddingTop: 5,
+        flexShrink: 1,
+
     },
     imagePreviewCircle: {
         width: 45,
         height: 45,
         borderRadius: 50,
-    },
-    bookmark: {
-        position: 'absolute',
-        top: 10,
-        right: 10
     },
     separator: {
         width: 330,
