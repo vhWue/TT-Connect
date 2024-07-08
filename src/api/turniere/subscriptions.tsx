@@ -45,7 +45,7 @@ export const useInsertCompetitionRegistrationSubscription = () => {
     }, []);
 }
 
-export const useDeleteBookmarkSubscription = (playerId: number) => {
+export const useDeleteBookmarkSubscription = (playerId: number, tournament_id: null | number = null) => {
     const queryClient = useQueryClient()
     useEffect(() => {
         const bookmark_registration = supabase
@@ -54,11 +54,15 @@ export const useDeleteBookmarkSubscription = (playerId: number) => {
                 'postgres_changes',
                 { event: 'DELETE', schema: 'public', table: 'bookmarked_tournaments' },
                 (payload) => {
-                    console.log("useDeleteBookmarkSubscription");
+
                     queryClient.invalidateQueries({ queryKey: ['tournament_infiniteScroll', playerId] });
                     queryClient.invalidateQueries({ queryKey: ['player_tournaments', playerId] });
                     queryClient.invalidateQueries({ queryKey: ['bookmarked', playerId] });
+                    console.log("Turnier ID", tournament_id);
 
+                    if (tournament_id) {
+                        queryClient.invalidateQueries({ queryKey: ['tournaments', tournament_id] });
+                    }
                 }
             )
             .subscribe();
@@ -76,10 +80,12 @@ export const useInsertBookmarkSubscription = (playerId: number) => {
                 'postgres_changes',
                 { event: 'INSERT', schema: 'public', table: 'bookmarked_tournaments' },
                 (payload) => {
-                    console.log("useInsertBookmarkSubscription");
                     queryClient.invalidateQueries({ queryKey: ['tournament_infiniteScroll', playerId] });
                     queryClient.invalidateQueries({ queryKey: ['player_tournaments', playerId] });
                     queryClient.invalidateQueries({ queryKey: ['bookmarked', playerId] });
+                    if (payload.new.tournament_id) {
+                        queryClient.invalidateQueries({ queryKey: ['tournaments', payload.new.tournament_id] });
+                    }
                 }
             )
             .subscribe();

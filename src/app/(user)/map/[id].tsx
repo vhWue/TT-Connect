@@ -11,22 +11,56 @@ import SVG_Trennstrich from '@assets/images/Trennstrich.svg'
 import CompetitionAccordionList from '@/components/Custom/CompetitionAccordionList';
 
 import { useAuth } from '@/providers/AuthProvider';
+import SVG_active_Bookmark from '@assets/images/active_bookmark.svg';
+import SVG_inactive_Bookmark from '@assets/images/material-symbols_bookmark-outline.svg';
+import { Tables } from '@/types';
+import { useInsertBookmarker, useDeleteBookmarker } from '@/api/turniere/bookmarker';
+import { useInsertCompetitionRegistrationSubscription, useInsertBookmarkSubscription, useDeleteBookmarkSubscription } from '@/api/turniere/subscriptions';
 
 
 const TurnierDetailScreen = () => {
     const { playerProfile } = useAuth()
-    const playerID = playerProfile === null ? 0 : playerProfile.id
-    const { data: registeredTournaments, error: registeredTournaments_error } = useRegisteredTournamentCompetitionsByPlayerId(playerID)
     const { id: idString } = useLocalSearchParams();
+    if (!playerProfile) {
+        return <Text>Spielerprofil konnte nicht gefunden werden</Text>
+    }
+    const id = parseFloat(typeof idString === 'string' ? idString : idString[0])
+    const { data, error, isLoading, isPending } = useTournamentDetailsById(id, playerProfile.id)
+
+    useInsertCompetitionRegistrationSubscription();
+    useInsertBookmarkSubscription(playerProfile.id)
+    useDeleteBookmarkSubscription(playerProfile.id, id)
+    const { mutate: insertBookmarker } = useInsertBookmarker()
+    const { mutate: deleteBookmarker } = useDeleteBookmarker(playerProfile?.id)
+    const { data: registeredTournaments, error: registeredTournaments_error } = useRegisteredTournamentCompetitionsByPlayerId(playerProfile.id)
     const [collapsed, setCollapsed] = useState(true);
     const [isSticky, setIsSticky] = useState(false);  // Zustand für Sticky-Header
-    const id = parseFloat(typeof idString === 'string' ? idString : idString[0])
-    const { data: turnier, error, isLoading, isPending } = useTournamentDetailsById(id)
+
     if (error) { console.log(error.message); }
     const handleScroll = (event: any) => {
         const y = event.nativeEvent.contentOffset.y;
         setIsSticky(y >= 315); // Angenommener Wert, an dem der Header sticky wird
     };
+
+
+    const handleBookmarker = (bookmarked: boolean, tournament_id: number) => {
+        if (!bookmarked) {
+            const newBookmarker = {
+                player_id: playerProfile.id,
+                tournament_id: tournament_id
+            }
+            insertBookmarker(newBookmarker)
+        } else if (bookmarked) {
+            deleteBookmarker(tournament_id)
+        }
+
+
+    }
+
+
+
+
+
 
     return (
         <BaseScreen ellipse={false} entering={FadeInLeft.duration(500)}>
@@ -36,7 +70,7 @@ const TurnierDetailScreen = () => {
             {isSticky && (
                 <View style={{ width: '100%', height: 100, position: 'absolute', backgroundColor: '#0C0C0C' }}></View>
             )}
-            {!isLoading && (
+            {!isLoading && data && data.tournament && (
                 <SafeAreaView>
                     <ScrollView style={{ marginTop: 15 }}
                         showsVerticalScrollIndicator={false}
@@ -44,37 +78,42 @@ const TurnierDetailScreen = () => {
                         onScroll={handleScroll}
                     >
                         <View style={styles.container}>
-                            <Text style={styles.header}>{turnier?.name}</Text>
+                            <Text style={styles.header}>{data?.tournament.name}</Text>
+                            <View style={styles.overlay}>
+                                <TouchableOpacity onPress={() => handleBookmarker(data.bookmarked, data?.tournament.id)}>
+                                    {data.bookmarked ? <SVG_active_Bookmark /> : <SVG_inactive_Bookmark />}
+                                </TouchableOpacity>
+                            </View>
                             <View style={styles.subheader}>
                                 <View style={styles.inline}>
                                     <Text style={styles.title}>Turnierart</Text>
-                                    <Text style={styles.value}>{turnier?.type.toUpperCase()}</Text>
+                                    <Text style={styles.value}>{data?.tournament.type?.toUpperCase()}</Text>
                                 </View>
                                 <View style={styles.inline}>
                                     <Text style={styles.title}>Anmeldung bis</Text>
                                     <Text style={styles.value}>
-                                        {turnier?.registrationEndDatetime ? `${new Date(turnier.registrationEndDatetime).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} | ${new Date(turnier.registrationEndDatetime).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr` : 'Datum nicht verfügbar'}
+                                        {data?.tournament?.registrationEndDatetime ? `${new Date(data?.tournament.registrationEndDatetime).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} | ${new Date(data?.tournament.registrationEndDatetime).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr` : 'Datum nicht verfügbar'}
 
                                     </Text>
                                 </View>
                                 <View style={styles.inline}>
                                     <Text style={styles.title}>Start</Text>
                                     <Text style={styles.value}>
-                                        {turnier?.startDate ? `${new Date(turnier?.startDate).toLocaleDateString('de-DE')}` : 'Datum nicht verfügbar'}
+                                        {data?.tournament.startDate ? `${new Date(data.tournament?.startDate).toLocaleDateString('de-DE')}` : 'Datum nicht verfügbar'}
                                     </Text>
                                 </View>
                                 <View style={styles.inline}>
                                     <Text style={styles.title}>Verband</Text>
-                                    <Text style={styles.value}>{turnier?.federationNickname}</Text>
+                                    <Text style={styles.value}>{data?.tournament.federationNickname}</Text>
                                 </View>
                                 <View style={styles.inline}>
                                     <Text style={styles.title}>Veranstalter</Text>
-                                    <Text style={styles.value}>{`${turnier?.hostName}`}</Text>
+                                    <Text style={styles.value}>{`${data?.tournament.hostName}`}</Text>
                                 </View>
 
                                 <View style={styles.inline}>
                                     <Text style={styles.title}>Austragungsort</Text>
-                                    <Text style={styles.value}>{`${turnier?.locationZIPCode} ${turnier?.locationCity} \n${turnier?.locationName}`}</Text>
+                                    <Text style={styles.value}>{`${data?.tournament.locationZIPCode} ${data?.tournament.locationCity} \n${data?.tournament.locationName}`}</Text>
                                 </View>
                             </View>
                         </View>
@@ -83,7 +122,7 @@ const TurnierDetailScreen = () => {
                         <TouchableOpacity onPress={() => setCollapsed(!collapsed)}>
                             <Text style={isSticky ? styles.stickyHeader : styles.Competitions}>Staffeln</Text>
                         </TouchableOpacity>
-                        {!isLoading && (<CompetitionAccordionList registeredTournaments={registeredTournaments} collapsed={collapsed} sections={turnier?.competitions} />)}
+                        {!isLoading && (<CompetitionAccordionList registeredTournaments={registeredTournaments} collapsed={collapsed} sections={data?.tournament.competitions} />)}
                         <View style={{ height: 50 }}></View>
                     </ScrollView>
                 </SafeAreaView>
@@ -148,6 +187,15 @@ const styles = StyleSheet.create({
         paddingLeft: 15,
         paddingTop: 5,
         paddingBottom: 15,
+    },
+    overlay: {
+        width: 50, height: 50,
+        //borderWidth: 1, borderColor: 'blue',
+        position: 'absolute',
+        right: 0,
+        zIndex: 20,
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 })
 

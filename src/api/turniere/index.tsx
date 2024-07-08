@@ -82,17 +82,39 @@ export const useUpcomingTournamentsList = (filter: FilterData) => {
 
 };
 
-export const useTournamentDetailsById = (id: number) => {
+export const useTournamentDetailsById = (id: number, player_id: number) => {
     return useQuery({
         queryKey: ['tournaments', id],
         queryFn: async () => {
-            const { data, error } = await supabase.from('tournaments').select('*,competitions(*)').eq('id', id).single();
+            // Abfrage der Turnierdetails
+            const { data: tournamentData, error: tournamentError } = await supabase
+                .from('tournaments')
+                .select('*, competitions(*)')
+                .eq('id', id)
+                .single();
 
-            if (error) {
-                throw new Error(error.message);
+            if (tournamentError) {
+                throw new Error(tournamentError.message);
             }
 
-            return data || [];
+            // Überprüfen, ob das Turnier gebookmarkt ist
+            const { data: bookmarkData, error: bookmarkError } = await supabase
+                .from('bookmarked_tournaments')
+                .select('*')
+                .eq('player_id', player_id)
+                .eq('tournament_id', id)
+                .single();
+
+            if (bookmarkError && bookmarkError.code !== 'PGRST116') {
+                // PGRST116 bedeutet "Row not found", was erwartet werden kann, wenn der Eintrag nicht existiert
+                throw new Error(bookmarkError.message);
+            }
+
+            // Rückgabe der Daten in der gewünschten Struktur
+            return {
+                bookmarked: !!bookmarkData,
+                tournament: tournamentData
+            };
         },
     });
 }
@@ -270,15 +292,16 @@ export const useRegisteredTournamentsByPlayer = (player_id: number) => {
 
 const LIMIT = 5;
 
-const fetchTournaments = async ({ pageParam = null }: { pageParam: any }) => {
+const fetchTournaments = async ({ pageParam = null, player_id }: { pageParam: any, player_id: number }) => {
 
-    // Rufe die gespeicherte Funktion auf
-    const { data, error } = await supabase
+    let query = supabase
         .rpc('get_bookmarked_tournaments', {
-            p_player_id: 1,
-            p_limit: 5,
+            p_player_id: player_id,
+            p_limit: LIMIT,
             p_page_param: pageParam
-        });
+        })
+    // Rufe die gespeicherte Funktion auf
+    const { data, error } = await query;
 
     if (error) {
         console.error("Error fetching tournaments:", error.message);
@@ -308,7 +331,7 @@ export const useTournamentsWithInfiniteScroll = () => {
     const { playerProfile } = useAuth()
     return useInfiniteQuery<FetchTournamentsResponse, Error>({
         queryKey: ['tournament_infiniteScroll', playerProfile.id],
-        queryFn: ({ pageParam = null }) => fetchTournaments({ pageParam }),
+        queryFn: ({ pageParam = null }) => fetchTournaments({ pageParam, player_id: playerProfile.id }),
         initialPageParam: null,
         getNextPageParam: (lastPage) => lastPage.nextPage
     });
