@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, Image } from 'react-native'
 import React, { useEffect } from 'react'
 import Colors from '@/constants/Colors'
-import SVG_Bookmark from '@assets/images/material-symbols_bookmark-outline.svg'
+
 import SVG_Clock from '@assets/images/clock.svg'
 import TurnierStateBadge from './TurnierStateBadge'
 import { Tables } from '@/types'
@@ -57,7 +57,7 @@ const KalenderCard = ({ data }: { data: Tables<'tournaments'> | undefined }) => 
 
                     </View>
                 </View>
-                <SVG_Bookmark style={styles.bookmark} />
+
                 <View style={styles.badges}>
 
                     <TurnierStateBadge state={data?.state ?? ''} />

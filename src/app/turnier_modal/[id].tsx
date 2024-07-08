@@ -1,7 +1,7 @@
 
 
 import { View, Text, StyleSheet, ActivityIndicator, FlatList, SafeAreaView, TouchableOpacity } from 'react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import BaseScreen from '@/components/BaseScreen';
 import { useRegisteredCompetitionsByPlayer } from '@/api/turniere';
@@ -14,12 +14,20 @@ import Animated, { FadeIn, FadeInDown, FadeInRight, FadeInUp } from 'react-nativ
 const TurnierDetailModalScreen = () => {
     const { id: idString } = useLocalSearchParams();
     useDeleteCompetitionRegistrationSubscription()
+    const router = useRouter()
     const id = parseFloat(typeof idString === 'string' ? idString : idString[0])
     const { playerProfile } = useAuth()
     if (!playerProfile) {
         return <Text>Please log in to see your registered tournaments</Text>
     }
     const { data, error, isLoading } = useRegisteredCompetitionsByPlayer(playerProfile?.id, id)
+
+    useEffect(() => {
+        if (data?.length === 0) {
+            router.back()
+        }
+    }, [data])
+
 
     { isLoading && (<ActivityIndicator size='large' style={{ position: 'absolute', left: '45%', top: '50%' }} />) }
     let tournaments = data as unknown as PlayerTournaments[]

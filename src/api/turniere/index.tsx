@@ -3,7 +3,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 import { FilterData } from "@/providers/MapFilterProvider";
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from "@/providers/AuthProvider";
-import { InsertTables } from '../../types';
+import { InsertTables, Tables } from '../../types';
 
 
 
@@ -265,39 +265,58 @@ export const useRegisteredTournamentsByPlayer = (player_id: number) => {
         },
     });
 }
+
 const LIMIT = 5;
 
-const fetchTournaments = async ({ pageParam = null }) => {
-    let query = supabase
-        .from('tournaments')
-        .select('*')
-        .gt('startDate', new Date().toISOString())
-        .order('startDate', { ascending: true })
-        .limit(LIMIT);
+const fetchTournaments = async ({ pageParam = null }: { pageParam: any }) => {
 
-    if (pageParam) {
-        query = query.gt('startDate', pageParam);
-    }
-
-    const { data, error } = await query;
+    // Rufe die gespeicherte Funktion auf
+    const { data, error } = await supabase
+        .rpc('get_bookmarked_tournaments', {
+            p_player_id: 1,
+            p_limit: 5,
+            p_page_param: pageParam
+        });
 
     if (error) {
+        console.error("Error fetching tournaments:", error.message);
         throw new Error(error.message);
     }
 
+
+
     const nextPage = data.length === LIMIT ? data[data.length - 1].startDate : null;
 
+    const processedData = data.map(tournament => {
+        const { bookmarked, ...tournamentData } = tournament;
+        return {
+            bookmarked,
+            tournament: tournamentData
+        };
+    });
+
     return {
-        data,
+        data: processedData,
         nextPage,
     };
 };
 
+
 export const useTournamentsWithInfiniteScroll = () => {
-    return useInfiniteQuery({
-        queryKey: ['tournament_infiniteScroll'],
-        queryFn: fetchTournaments,
-        initialPageParam: 0,
+    const { playerProfile } = useAuth()
+    return useInfiniteQuery<FetchTournamentsResponse, Error>({
+        queryKey: ['tournament_infiniteScroll', playerProfile.id],
+        queryFn: ({ pageParam = null }) => fetchTournaments({ pageParam }),
+        initialPageParam: null,
         getNextPageParam: (lastPage) => lastPage.nextPage
     });
 };
+
+
+interface FetchTournamentsResponse {
+    data: {
+        bookmarked: boolean;
+        tournament: Tables<'tournaments'>;
+    }[];
+    nextPage: string | null;
+}

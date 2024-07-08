@@ -8,7 +8,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const HomeScreen = () => {
     const router = useRouter();
-
     const handlePanGestureStateChange = ({ nativeEvent }) => {
         if (nativeEvent.state === State.END) {
             if (nativeEvent.translationX < -50) { // Minimum swipe distance to trigger the navigation to the left

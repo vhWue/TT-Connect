@@ -7,10 +7,18 @@ import { useAuth } from '@/providers/AuthProvider';
 import { useRouter } from 'expo-router';
 import { FadeIn } from 'react-native-reanimated';
 import KalenderCard from '@/components/Custom/TurnierCard/KalenderCard';
-
+import SVG_inactive_Bookmark from '@assets/images/material-symbols_bookmark-outline.svg'
+import SVG_active_Bookmark from '@assets/images/active_bookmark.svg'
+import { Tables } from '@/types';
+import { useDeleteBookmarker, useInsertBookmarker } from '@/api/turniere/bookmarker';
 const OverviewTournamentsScreen = () => {
-  useInsertCompetitionRegistrationSubscription();
   const { playerProfile } = useAuth();
+  if (!playerProfile) {
+    return <Text>Spielerprofil konnte nicht geladen werden</Text>
+  }
+  useInsertCompetitionRegistrationSubscription();
+  const { mutate: insertBookmarker } = useInsertBookmarker()
+  const { mutate: deleteBookmarker } = useDeleteBookmarker(playerProfile?.id)
   const router = useRouter();
 
 
@@ -30,6 +38,22 @@ const OverviewTournamentsScreen = () => {
     router.push(`(user)/turniere/staffeln/${id}`);
   }
 
+  const handleBookmarker = (bookmarked: boolean, tournament: Tables<'tournaments'>) => {
+    console.log("Turnier ID: ", tournament.id);
+    console.log("Bookmarked", bookmarked);
+    if (!bookmarked) {
+      const newBookmarker = {
+        player_id: playerProfile.id,
+        tournament_id: tournament.id
+      }
+      insertBookmarker(newBookmarker)
+    } else if (bookmarked) {
+      deleteBookmarker(tournament.id)
+    }
+
+
+  }
+
   if (isLoading) {
     return <ActivityIndicator size='large' style={{ position: 'absolute', left: '45%', top: '50%' }} />;
   }
@@ -46,18 +70,22 @@ const OverviewTournamentsScreen = () => {
           <FlatList
             style={{ zIndex: 1000, paddingTop: 20 }}
             data={tournaments}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item) => item.tournament.id.toString()}
             renderItem={({ item }) => (
-              <TouchableOpacity onPress={() => handleOnPress(item.id)} style={styles.itemContainer}>
-                <KalenderCard data={item} />
-              </TouchableOpacity>
+              <View>
+                <View style={styles.overlay}>
+                  <TouchableOpacity onPress={() => handleBookmarker(item.bookmarked, item.tournament)}>
+                    {item.bookmarked ? <SVG_active_Bookmark /> : <SVG_inactive_Bookmark />}
+                  </TouchableOpacity>
+                </View>
+                <TouchableOpacity onPress={() => handleOnPress(item.tournament.id)} style={styles.itemContainer}>
+                  <KalenderCard data={item.tournament} />
+                </TouchableOpacity>
+              </View>
             )}
             showsVerticalScrollIndicator={false}
 
             onEndReached={() => {
-              console.log("end Reached");
-              console.log("hasNextPage", hasNextPage);
-
               if (hasNextPage && !isFetchingNextPage && !isFetching) {
                 fetchNextPage();
               }
@@ -91,6 +119,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 75,
   },
+  overlay: {
+    width: 50, height: 50,
+    //borderWidth: 1, borderColor: 'blue',
+    position: 'absolute',
+    right: 0,
+    zIndex: 20,
+    justifyContent: 'center',
+    alignItems: 'center'
+  }
 });
 
 

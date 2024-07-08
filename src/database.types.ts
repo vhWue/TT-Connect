@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      bookmarked_tournaments: {
+        Row: {
+          created_at: string
+          id: number
+          player_id: number
+          tournament_id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          player_id: number
+          tournament_id: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          player_id?: number
+          tournament_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookmarked_tournaments_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "player_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookmarked_tournaments_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competitions: {
         Row: {
           ageGroup: string | null
@@ -247,80 +283,41 @@ export type Database = {
         }
         Relationships: []
       }
-      tournaments_duplicate: {
-        Row: {
-          endDate: string | null
-          federationNickname: string | null
-          fedRankValuation: boolean | null
-          geo_point: unknown | null
-          hostName: string | null
-          id: number
-          locationCity: string | null
-          locationLatitude: number | null
-          locationLongitude: number | null
-          locationName: string | null
-          locationZIPCode: string | null
-          name: string
-          playerCapacityRemaining: number | null
-          playerCapacityTotal: number | null
-          registrationEndDatetime: string | null
-          startDate: string | null
-          state: string
-          tournamentId: string
-          tournamentRegion: string | null
-          type: string | null
-        }
-        Insert: {
-          endDate?: string | null
-          federationNickname?: string | null
-          fedRankValuation?: boolean | null
-          geo_point?: unknown | null
-          hostName?: string | null
-          id?: number
-          locationCity?: string | null
-          locationLatitude?: number | null
-          locationLongitude?: number | null
-          locationName?: string | null
-          locationZIPCode?: string | null
-          name: string
-          playerCapacityRemaining?: number | null
-          playerCapacityTotal?: number | null
-          registrationEndDatetime?: string | null
-          startDate?: string | null
-          state: string
-          tournamentId: string
-          tournamentRegion?: string | null
-          type?: string | null
-        }
-        Update: {
-          endDate?: string | null
-          federationNickname?: string | null
-          fedRankValuation?: boolean | null
-          geo_point?: unknown | null
-          hostName?: string | null
-          id?: number
-          locationCity?: string | null
-          locationLatitude?: number | null
-          locationLongitude?: number | null
-          locationName?: string | null
-          locationZIPCode?: string | null
-          name?: string
-          playerCapacityRemaining?: number | null
-          playerCapacityTotal?: number | null
-          registrationEndDatetime?: string | null
-          startDate?: string | null
-          state?: string
-          tournamentId?: string
-          tournamentRegion?: string | null
-          type?: string | null
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      get_bookmarked_tournaments: {
+        Args: {
+          p_player_id: number
+          p_limit: number
+          p_page_param?: string
+        }
+        Returns: {
+          id: number
+          tournamentId: string
+          name: string
+          startDate: string
+          endDate: string
+          registrationEndDatetime: string
+          fedRankValuation: boolean
+          type: string
+          federationNickname: string
+          hostName: string
+          tournamentRegion: string
+          locationZIPCode: string
+          locationName: string
+          locationCity: string
+          locationLatitude: number
+          locationLongitude: number
+          state: string
+          playerCapacityTotal: number
+          playerCapacityRemaining: number
+          geo_point: unknown
+          bookmarked: boolean
+        }[]
+      }
       get_distinct_regions: {
         Args: Record<PropertyKey, never>
         Returns: {
