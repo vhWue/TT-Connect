@@ -6,7 +6,7 @@ import SVG_Clock from '@assets/images/clock.svg'
 import TurnierStateBadge from './TurnierStateBadge'
 import FedRankBadge from './FedRankBadge'
 
-import { DistinctPlayerTournaments } from '@/types'
+import { DistinctPlayerTournaments, Tables } from '@/types'
 import { FontAwesome } from '@expo/vector-icons'
 import TurnierTypeBadge from './TurnierTypeBadge'
 
@@ -39,6 +39,7 @@ const TurnierCard = ({ data }: { data: DistinctPlayerTournaments | undefined }) 
 
         return inputString.slice(0, spaceIndex) + '\n' + inputString.slice(spaceIndex + 1);
     }
+
     return (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
@@ -57,7 +58,6 @@ const TurnierCard = ({ data }: { data: DistinctPlayerTournaments | undefined }) 
 
                     </View>
                 </View>
-                <SVG_Bookmark style={styles.bookmark} />
                 <View style={styles.badges}>
 
                     <TurnierStateBadge state={data?.tournament_data.state ?? ''} />

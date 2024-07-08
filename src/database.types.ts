@@ -340,6 +340,16 @@ export type Database = {
           tournament_data: Json
         }[]
       }
+      get_distinct_tournaments_by_player_with_bookmarked: {
+        Args: {
+          player_id_param: number
+        }
+        Returns: {
+          tournament_id: number
+          tournament_data: Json
+          bookmarked: boolean
+        }[]
+      }
       get_filtered_tournaments_with_distance_agegroup: {
         Args: {
           in_latitude: number

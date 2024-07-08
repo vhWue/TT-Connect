@@ -166,6 +166,8 @@ export const useInsertTournamentRegistration = () => {
                 .eq('competition_id', data.competition_id)
                 .single();
 
+            console.log(existingError);
+
             if (existingError && existingError.code !== 'PGRST116') {
                 // PGRST116: No rows found error, kein Problem
 
@@ -185,7 +187,7 @@ export const useInsertTournamentRegistration = () => {
             }
         },
         async onSuccess(_, { id }) {
-            await queryClient.invalidateQueries({ queryKey: ['tournament_registration'] })
+            //await queryClient.invalidateQueries({ queryKey: ['tournament_registration'] })
             await queryClient.invalidateQueries({ queryKey: ['tournament_registration', id] })
         }
     })
@@ -215,7 +217,7 @@ export const useDeleteTournamentRegistration = () => {
 
         },
         async onSuccess(_, id) {
-            await queryClient.invalidateQueries({ queryKey: ['tournament_registration'] });
+            //await queryClient.invalidateQueries({ queryKey: ['tournament_registration'] });
             await queryClient.invalidateQueries({ queryKey: ['tournament_registration', id] });
         }
     });
@@ -252,7 +254,7 @@ export const useRegisteredTournamentsByPlayer = (player_id: number) => {
         queryKey: ['player_tournaments', player_id],
         queryFn: async () => {
             const { data, error } = await supabase
-                .rpc('get_distinct_tournaments_by_player', { player_id_param: player_id });
+                .rpc('get_distinct_tournaments_by_player_with_bookmarked', { player_id_param: player_id })
 
             if (error) {
                 throw new Error(error.message);

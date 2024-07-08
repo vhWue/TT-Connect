@@ -30,6 +30,7 @@ export type PlayerTournaments = {
 export type DistinctPlayerTournaments = {
 
     tournament_id: number;
+    bookmarked: boolean;
     tournament_data: Tables<'tournaments'>;
 
 }

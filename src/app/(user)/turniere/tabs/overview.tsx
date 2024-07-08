@@ -1,7 +1,7 @@
 import { View, Text, ActivityIndicator, FlatList, SafeAreaView, TouchableOpacity, StyleSheet } from 'react-native'
 import React from 'react'
 import { useTournamentsWithInfiniteScroll } from '@/api/turniere';
-import { useInsertCompetitionRegistrationSubscription } from '@/api/turniere/subscriptions';
+import { useDeleteBookmarkSubscription, useInsertBookmarkSubscription, useInsertCompetitionRegistrationSubscription } from '@/api/turniere/subscriptions';
 import BaseScreen from '@/components/BaseScreen';
 import { useAuth } from '@/providers/AuthProvider';
 import { useRouter } from 'expo-router';
@@ -17,6 +17,8 @@ const OverviewTournamentsScreen = () => {
     return <Text>Spielerprofil konnte nicht geladen werden</Text>
   }
   useInsertCompetitionRegistrationSubscription();
+  useInsertBookmarkSubscription(playerProfile.id)
+  useDeleteBookmarkSubscription(playerProfile.id)
   const { mutate: insertBookmarker } = useInsertBookmarker()
   const { mutate: deleteBookmarker } = useDeleteBookmarker(playerProfile?.id)
   const router = useRouter();
@@ -39,8 +41,6 @@ const OverviewTournamentsScreen = () => {
   }
 
   const handleBookmarker = (bookmarked: boolean, tournament: Tables<'tournaments'>) => {
-    console.log("Turnier ID: ", tournament.id);
-    console.log("Bookmarked", bookmarked);
     if (!bookmarked) {
       const newBookmarker = {
         player_id: playerProfile.id,

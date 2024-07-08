@@ -1,10 +1,39 @@
 import { supabase } from "@/app/lib/supabase";
 import { InsertTables } from "@/types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+export const useBookmarkedTournamentsByPlayer = (player_id: number) => {
+    return useQuery({
+        queryKey: ['bookmarked', player_id],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('bookmarked_tournaments')
+                .select('tournament_id, tournaments(*)')
+                .eq('player_id', player_id);
+
+            if (error) {
+                throw new Error(error.message);
+            }
+            if (!data) {
+                return [];
+            }
+
+            // Filtere die Daten, um nur Einträge zu behalten, bei denen das tournaments-Objekt nicht null ist
+            const filteredData = data.filter((entry): entry is { tournament_id: number; tournaments: NonNullable<typeof entry.tournaments> } => entry.tournaments !== null);
+
+            return filteredData;
+        },
+    });
+}
+
+
+
+
+
+
+
 
 export const useInsertBookmarker = () => {
-    const queryClient = useQueryClient();
-
 
     return useMutation({
         async mutationFn(data: InsertTables<'bookmarked_tournaments'>) {
@@ -17,29 +46,25 @@ export const useInsertBookmarker = () => {
                 .eq('tournament_id', data.tournament_id)
                 .single();
 
+            console.log("existingBookmarker", existingBookmarker);
+
             if (existingError && existingError.code !== 'PGRST116') {
                 // PGRST116: No rows found error, kein Problem
-
-
                 throw new Error(existingError.message);
             }
 
 
             if (!existingBookmarker) {
-                console.log("Kein Bookmarker vorhanden");
-
                 const { error, data: newBookmarker } = await supabase.from('bookmarked_tournaments')
                     .insert(data).select().single()
                 if (error) {
                     throw new Error(error.message);
                 }
+                console.log("Bookmarker inserted", newBookmarker);
+
 
                 return newBookmarker;
             }
-        },
-        async onSuccess(_, { player_id }) {
-            await queryClient.invalidateQueries({ queryKey: ['tournament_infiniteScroll', player_id] })
-
         }
     })
 }
@@ -47,7 +72,6 @@ export const useInsertBookmarker = () => {
 
 
 export const useDeleteBookmarker = (player_id: number) => {
-    const queryClient = useQueryClient();
 
     return useMutation({
         async mutationFn(tournament_id: number) {
@@ -64,12 +88,6 @@ export const useDeleteBookmarker = (player_id: number) => {
             if (error) {
                 throw new Error(error.message);
             }
-
-
-        },
-        async onSuccess(_) {
-            await queryClient.invalidateQueries({ queryKey: ['tournament_infiniteScroll', player_id] });
-
         }
     });
 };
