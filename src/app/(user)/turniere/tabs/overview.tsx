@@ -37,6 +37,8 @@ const OverviewTournamentsScreen = () => {
 
 
   const handleOnPress = (id: number) => {
+    console.log("ID", id);
+
     router.push(`(user)/turniere/staffeln/${id}`);
   }
 

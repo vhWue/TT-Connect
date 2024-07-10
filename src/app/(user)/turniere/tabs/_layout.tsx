@@ -13,12 +13,14 @@ import { Bookmarked, TurnierIcon } from '@/constants/Icons';
 import { AntDesign, FontAwesome } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "@/providers/AuthProvider";
 
 const { Navigator } = createMaterialTopTabNavigator();
 
 export const MaterialTopTabs = withLayoutContext<MaterialTopTabNavigationOptions, typeof Navigator, TabNavigationState<ParamListBase>, MaterialTopTabNavigationEventMap>(Navigator)
 
 export default function TurnierStack() {
+
 
 
     return (

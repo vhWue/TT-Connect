@@ -294,14 +294,13 @@ const LIMIT = 5;
 
 const fetchTournaments = async ({ pageParam = null, player_id }: { pageParam: any, player_id: number }) => {
 
-    let query = supabase
-        .rpc('get_bookmarked_tournaments', {
-            p_player_id: player_id,
-            p_limit: LIMIT,
-            p_page_param: pageParam
-        })
+
     // Rufe die gespeicherte Funktion auf
-    const { data, error } = await query;
+    const { data, error } = await supabase.rpc('get_bookmarked_tournaments', {
+        p_player_id: player_id,
+        p_limit: LIMIT,
+        p_page_param: pageParam
+    });
 
     if (error) {
         console.error("Error fetching tournaments:", error.message);

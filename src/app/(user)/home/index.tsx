@@ -5,9 +5,11 @@ import { useRouter } from 'expo-router';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '@/providers/AuthProvider';
 
 const HomeScreen = () => {
     const router = useRouter();
+
     const handlePanGestureStateChange = ({ nativeEvent }) => {
         if (nativeEvent.state === State.END) {
             if (nativeEvent.translationX < -50) { // Minimum swipe distance to trigger the navigation to the left

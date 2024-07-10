@@ -3,67 +3,97 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native'
 import React, { useState } from 'react'
 import { Stack, useLocalSearchParams } from 'expo-router'
-import Animated, { FadeInDown, FadeInLeft } from 'react-native-reanimated';
+import { FadeIn } from 'react-native-reanimated';
 import BaseScreen from '@/components/BaseScreen';
-import { useInsertTournamentRegistration, useRegisteredTournamentCompetitionsByPlayerId, useTournamentDetailsById } from '@/api/turniere';
+import { useRegisteredTournamentCompetitionsByPlayerId, useTournamentDetailsById } from '@/api/turniere';
 import Colors from '@/constants/Colors';
 import SVG_Trennstrich from '@assets/images/Trennstrich.svg'
 import CompetitionAccordionList from '@/components/Custom/CompetitionAccordionList';
 import { Alert } from 'react-native';
 import { Tables } from '@/types';
 import { useAuth } from '@/providers/AuthProvider';
-import { useInsertCompetitionRegistrationSubscription } from '@/api/turniere/subscriptions';
+import { useDeleteBookmarkSubscription, useInsertBookmarkSubscription, useInsertCompetitionRegistrationSubscription } from '@/api/turniere/subscriptions';
+import SVG_active_Bookmark from '@assets/images/active_bookmark.svg';
+import SVG_inactive_Bookmark from '@assets/images/material-symbols_bookmark-outline.svg';
+import { useDeleteBookmarker, useInsertBookmarker } from '@/api/turniere/bookmarker';
 
 const TurnierStaffelnModalScreen = () => {
     const { id: idString } = useLocalSearchParams();
     const { playerProfile } = useAuth()
-    const playerID = playerProfile === null ? 0 : playerProfile.id
+    if (!playerProfile) {
+        return <Text>Spielerprofil konnte nicht gefunden werden</Text>
+    }
+
     const id = parseFloat(typeof idString === 'string' ? idString : idString[0])
-    const { data: registeredTournaments, error: registeredTournaments_error } = useRegisteredTournamentCompetitionsByPlayerId(playerID)
+    useInsertBookmarkSubscription(playerProfile.id)
+    useDeleteBookmarkSubscription(playerProfile.id, id)
+    const { mutate: insertBookmarker } = useInsertBookmarker()
+    const { mutate: deleteBookmarker } = useDeleteBookmarker(playerProfile?.id)
+    const { data: registeredTournaments, error: registeredTournaments_error } = useRegisteredTournamentCompetitionsByPlayerId(playerProfile.id)
     const [collapsed, setCollapsed] = useState(true);
-    const { data: turnier, error, isLoading, isPending } = useTournamentDetailsById(id)
+    const { data, error, isLoading, isPending } = useTournamentDetailsById(id, playerProfile.id)
     if (error) { console.log(error.message); }
 
+    const handleBookmarker = (bookmarked: boolean, tournament_id: number) => {
+        if (!bookmarked) {
+            const newBookmarker = {
+                player_id: playerProfile.id,
+                tournament_id: tournament_id
+            }
+            insertBookmarker(newBookmarker)
+        } else if (bookmarked) {
+            deleteBookmarker(tournament_id)
+        }
+
+
+    }
     return (
-        <BaseScreen ellipse={false} >
+        <BaseScreen ellipse={false}>
             {isLoading && (<ActivityIndicator size='large' style={{ position: 'absolute', left: '45%', top: '50%' }} />)}
-
-
-            {!isLoading && (
+            <Stack.Screen options={{ headerTransparent: true, headerBackVisible: false, headerShown: false }} />
+            {!isLoading && data && data.tournament && (
                 <SafeAreaView>
-                    <ScrollView style={{ marginTop: 15 }} showsVerticalScrollIndicator={false}>
+                    <ScrollView style={{ marginTop: 15 }}
+                        showsVerticalScrollIndicator={false}
+                        stickyHeaderIndices={[2]}
+                    >
                         <View style={styles.container}>
-                            <Text style={styles.header}>{turnier?.name}</Text>
+                            <Text style={styles.header}>{data?.tournament.name}</Text>
+                            <View style={styles.overlay}>
+                                <TouchableOpacity onPress={() => handleBookmarker(data.bookmarked, data?.tournament.id)}>
+                                    {data.bookmarked ? <SVG_active_Bookmark /> : <SVG_inactive_Bookmark />}
+                                </TouchableOpacity>
+                            </View>
                             <View style={styles.subheader}>
                                 <View style={styles.inline}>
                                     <Text style={styles.title}>Turnierart</Text>
-                                    <Text style={styles.value}>{turnier?.type.toUpperCase()}</Text>
+                                    <Text style={styles.value}>{data?.tournament.type?.toUpperCase()}</Text>
                                 </View>
                                 <View style={styles.inline}>
                                     <Text style={styles.title}>Anmeldung bis</Text>
                                     <Text style={styles.value}>
-                                        {turnier?.registrationEndDatetime ? `${new Date(turnier.registrationEndDatetime).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} | ${new Date(turnier.registrationEndDatetime).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr` : 'Datum nicht verfügbar'}
+                                        {data?.tournament?.registrationEndDatetime ? `${new Date(data?.tournament.registrationEndDatetime).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} | ${new Date(data?.tournament.registrationEndDatetime).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr` : 'Datum nicht verfügbar'}
 
                                     </Text>
                                 </View>
                                 <View style={styles.inline}>
                                     <Text style={styles.title}>Start</Text>
                                     <Text style={styles.value}>
-                                        {turnier?.startDate ? `${new Date(turnier?.startDate).toLocaleDateString('de-DE')}` : 'Datum nicht verfügbar'}
+                                        {data?.tournament.startDate ? `${new Date(data.tournament?.startDate).toLocaleDateString('de-DE')}` : 'Datum nicht verfügbar'}
                                     </Text>
                                 </View>
                                 <View style={styles.inline}>
                                     <Text style={styles.title}>Verband</Text>
-                                    <Text style={styles.value}>{turnier?.federationNickname}</Text>
+                                    <Text style={styles.value}>{data?.tournament.federationNickname}</Text>
                                 </View>
                                 <View style={styles.inline}>
                                     <Text style={styles.title}>Veranstalter</Text>
-                                    <Text style={styles.value}>{`${turnier?.hostName}`}</Text>
+                                    <Text style={styles.value}>{`${data?.tournament.hostName}`}</Text>
                                 </View>
 
                                 <View style={styles.inline}>
                                     <Text style={styles.title}>Austragungsort</Text>
-                                    <Text style={styles.value}>{`${turnier?.locationZIPCode} | ${turnier?.locationCity} \n${turnier?.locationName}`}</Text>
+                                    <Text style={styles.value}>{`${data?.tournament.locationZIPCode} ${data?.tournament.locationCity} \n${data?.tournament.locationName}`}</Text>
                                 </View>
                             </View>
                         </View>
@@ -72,7 +102,7 @@ const TurnierStaffelnModalScreen = () => {
                         <TouchableOpacity onPress={() => setCollapsed(!collapsed)}>
                             <Text style={styles.Competitions}>Staffeln</Text>
                         </TouchableOpacity>
-                        {!isLoading && (<CompetitionAccordionList registeredTournaments={registeredTournaments} collapsed={collapsed} sections={turnier?.competitions} />)}
+                        {!isLoading && (<CompetitionAccordionList registeredTournaments={registeredTournaments} collapsed={collapsed} sections={data?.tournament.competitions} />)}
                         <View style={{ height: 50 }}></View>
                     </ScrollView>
                 </SafeAreaView>
@@ -133,6 +163,15 @@ const styles = StyleSheet.create({
         paddingBottom: 15,
         backgroundColor: 'transparent',
     },
+    overlay: {
+        width: 50, height: 50,
+        //borderWidth: 1, borderColor: 'blue',
+        position: 'absolute',
+        right: 0,
+        zIndex: 20,
+        justifyContent: 'center',
+        alignItems: 'center'
+    }
 })
 
 export default TurnierStaffelnModalScreen

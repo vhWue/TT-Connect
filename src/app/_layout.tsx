@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
-import AuthProvider from '@/providers/AuthProvider';
+import AuthProvider, { useAuth } from '@/providers/AuthProvider';
 import QueryProvider from '@/providers/QueryProvider';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 export {
@@ -52,6 +52,7 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
+
   return (
     <AuthProvider>
       <QueryProvider>

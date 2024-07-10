@@ -11,6 +11,7 @@ import {
 
 type AuthData = {
     session: Session | null;
+    setSession: any;
     profile: any;
     playerProfile: Tables<'player_profiles'> | null;
     loading: boolean;
@@ -19,6 +20,7 @@ type AuthData = {
 
 const AuthContext = createContext<AuthData>({
     session: null,
+    setSession: null,
     loading: true,
     profile: null,
     playerProfile: null,
@@ -28,8 +30,35 @@ const AuthContext = createContext<AuthData>({
 export default function AuthProvider({ children }: PropsWithChildren) {
     const [session, setSession] = useState<Session | null>(null);
     const [profile, setProfile] = useState(null);
-    const [playerProfile, setPlayerProfile] = useState(null)
+    const [playerProfile, setPlayerProfile] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    const fetchProfileData = async (session: Session) => {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+        setProfile(profile || null);
+
+        const { data: playerProfile } = await supabase
+            .from('player_profiles')
+            .select('*')
+            .eq('profile_id', session.user.id)
+            .single();
+        setPlayerProfile(playerProfile || null);
+    };
+
+    const handleAuthChange = async (event: string, session: Session | null) => {
+        if (session) {
+            await fetchProfileData(session);
+        } else {
+            setProfile(null);
+            setPlayerProfile(null);
+        }
+        setSession(session);
+        setLoading(false);
+    };
 
     useEffect(() => {
         const fetchSession = async () => {
@@ -37,41 +66,29 @@ export default function AuthProvider({ children }: PropsWithChildren) {
                 data: { session },
             } = await supabase.auth.getSession();
 
-            setSession(session);
-
             if (session) {
-                // fetch profile
-                const { data } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .single();
-                setProfile(data || null);
-
-                const { data: player_profile } = await supabase
-                    .from('player_profiles')
-                    .select('*')
-                    .eq('profile_id', session.user.id)
-                    .single();
-                setPlayerProfile(player_profile || null);
+                await fetchProfileData(session);
             }
-
+            setSession(session);
             setLoading(false);
         };
 
         fetchSession();
-        supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
-        });
+
+        const { data: authListener } = supabase.auth.onAuthStateChange(
+            (event, session) => {
+                handleAuthChange(event, session);
+            }
+        );
+
+        return () => {
+            authListener.subscription.unsubscribe();
+        };
     }, []);
-
-
-
-
 
     return (
         <AuthContext.Provider
-            value={{ session, loading, profile, playerProfile, isAdmin: profile?.group === 'ADMIN' }}
+            value={{ session, setSession, loading, profile, playerProfile, isAdmin: profile?.group === 'ADMIN' }}
         >
             {children}
         </AuthContext.Provider>
