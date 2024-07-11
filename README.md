@@ -37,3 +37,6 @@ Führen Sie die folgenden Schritte aus, um das Projekt herunterzuladen und zu st
 4. **Download Expo Go**: Lade die Expo Go App auf dem Hany aus dem Google Play Store oder dem Apple App Store herunter.
 
 Scanne den QR-Code, der im Terminal oder Browser angezeigt wird, mit der Expo Go App, um die App zu starten und zu testen.
+
+5. **Demo Account**:
+     Es besteht die Möglichkeit den Demo Account ```demo@karsten.de``` mit Passwort ```demo123``` zu verwenden, oder einen eigenen neuen Account im Sign-Up Screen zu erstellen.
