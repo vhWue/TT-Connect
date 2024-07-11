@@ -34,3 +34,6 @@ Führen Sie die folgenden Schritte aus, um das Projekt herunterzuladen und zu st
    ```bash
      npm start
    ```
+4. **Download Expo Go**: Lade die Expo Go App auf dem Hany aus dem Google Play Store oder dem Apple App Store herunter.
+
+Scanne den QR-Code, der im Terminal oder Browser angezeigt wird, mit der Expo Go App, um die App zu starten und zu testen.
