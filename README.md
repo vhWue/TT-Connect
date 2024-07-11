@@ -28,4 +28,9 @@ Führen Sie die folgenden Schritte aus, um das Projekt herunterzuladen und zu st
 2. **Abhängigkeiten installieren**:
    ```bash
      npm install
-```
+   ```
+
+3. **Starten von Expo**:
+   ```bash
+     npm start
+   ```
