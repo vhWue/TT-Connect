@@ -23,8 +23,9 @@ Führen Sie die folgenden Schritte aus, um das Projekt herunterzuladen und zu st
 1. **Repository klonen**:
    ```bash
    git clone https://github.com/vhWue/TT-Connect.git
-   cd TT-Connect ```
+   cd TT-Connect
+   ```
 2. **Abhängigkeiten installieren**:
    ```bash
-  npm install
+     npm install
 ```
