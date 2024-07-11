@@ -34,7 +34,7 @@ const PersonalTournamentsScreen = () => {
     };
 
     const handleOnPress = (id: number) => {
-        router.push(`turnier_modal/${id}`);
+        router.push(`/turniere/${id}`);
     }
 
 

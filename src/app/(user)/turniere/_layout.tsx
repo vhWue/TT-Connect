@@ -13,6 +13,7 @@ const Layout = () => {
                 }}
             />
             <Stack.Screen name='staffeln/[id]' options={{ presentation: 'modal', title: 'Staffeln', headerShown: false, headerTransparent: true, headerTintColor: '#E6E6EB' }} />
+            <Stack.Screen name="[id]" options={{ presentation: 'modal', title: 'Staffeln', headerTransparent: true, headerTintColor: '#E6E6EB', headerShown: false }} />
         </Stack>
     )
 }

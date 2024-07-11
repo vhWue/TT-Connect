@@ -32,7 +32,7 @@ const BookmarkerOverviewTournamentsScreen = () => {
 
 
     const handleOnPress = (id: number) => {
-        router.push(`(user)/turniere/staffeln/${id}`);
+        router.push(`/turniere/staffeln/${id}`);
     }
 
     const deleteBookmarkerHandler = (tournament: Tables<'tournaments'>) => {
